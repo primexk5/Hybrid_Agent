@@ -1,18 +1,3 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
-
-## Getting Started
-
-First, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
 Problem Statement
 In the traditional property market—whether for land, houses, or vehicles—selling agents operate without a secure, standardized system to guarantee their commission. The current process relies on verbal agreements and informal contracts, leaving agents vulnerable to fraud. Following a successful sale, property owners can, and often do, bypass the agent, denying them their rightful payment. This lack of accountability creates a high-risk environment that undermines trust and discourages professional agents, stifling a vital part of the economy.
