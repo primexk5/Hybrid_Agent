@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 6, "column": 0}, "map": {"version":3,"sources":[],"names":[],"mappings":"","debugId":null}},
+    {"offset": {"line": 18, "column": 0}, "map": {"version":3,"sources":["file:///home/newking/Desktop/Global/projects/ProdfestHackathon/hybrid-agent/app/Listings/page.jsx"],"sourcesContent":["import React from 'react'\nimport Link from 'next/link'\nconst page = () => {\n  return (\n    <>\n        <div className='h-screen mt-24'>\n             <div className='px-60 flex flex-col'>\n                <h4 className='text-2xl font-mono mb-3'><b>Listings</b></h4>\n                <div className='flex gap-2'>\n                  <Link className='hover:text-teal-700 text-xl font-mono'  href='#'>Propertise</Link>\n                  <p>/</p>\n                  <Link className='hover:text-teal-700 text-xl font-mono'  href='#'>Vihecles</Link>\n                </div>\n             </div>\n        </div>\n    </>\n  )\n}\n\nexport default page"],"names":[],"mappings":";;;;AAAA;AACA;;;;AACA,MAAM,OAAO;IACX,qBACE;kBACI,cAAA,8OAAC;YAAI,WAAU;sBACV,cAAA,8OAAC;gBAAI,WAAU;;kCACZ,8OAAC;wBAAG,WAAU;kCAA0B,cAAA,8OAAC;sCAAE;;;;;;;;;;;kCAC3C,8OAAC;wBAAI,WAAU;;0CACb,8OAAC,4JAAA,CAAA,UAAI;gCAAC,WAAU;gCAAyC,MAAK;0CAAI;;;;;;0CAClE,8OAAC;0CAAE;;;;;;0CACH,8OAAC,4JAAA,CAAA,UAAI;gCAAC,WAAU;gCAAyC,MAAK;0CAAI;;;;;;;;;;;;;;;;;;;;;;;;AAMpF;uCAEe","debugId":null}}]
+}

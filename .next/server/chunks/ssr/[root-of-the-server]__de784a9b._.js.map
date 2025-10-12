@@ -1,0 +1,8 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 6, "column": 0}, "map": {"version":3,"sources":[],"names":[],"mappings":"","debugId":null}},
+    {"offset": {"line": 18, "column": 0}, "map": {"version":3,"sources":["file:///home/newking/Desktop/Global/ProdfestHackathon/hybrid-agent/app/Hero/page.jsx"],"sourcesContent":["\nimport { useEffect } from 'react';\nimport AOS from 'aos';\nimport 'aos/dist/aos.css';\n\nuseEffect(() => {\n  AOS.init({ once: true });\n}, []);\n"],"names":[],"mappings":";AACA;AACA;;;;AAGA,CAAA,GAAA,qMAAA,CAAA,YAAS,AAAD,EAAE;IACR,kIAAA,CAAA,UAAG,CAAC,IAAI,CAAC;QAAE,MAAM;IAAK;AACxB,GAAG,EAAE","debugId":null}},
+    {"offset": {"line": 33, "column": 0}, "map": {"version":3,"sources":["file:///home/newking/Desktop/Global/ProdfestHackathon/hybrid-agent/app/page.js"],"sourcesContent":["import Image from \"next/image\";\nimport Hero from './Hero/page'\nimport { Toaster } from 'react-hot-toast';\n\nexport default function Home() {\n  return (\n   <>\n    <Toaster />\n     <div>\n        \n        <Hero />\n     </div>\n   </>\n  );\n}\n"],"names":[],"mappings":";;;;AAAA;AACA;AACA;;;;;AAEe,SAAS;IACtB,qBACC;;0BACC,8OAAC,uJAAA,CAAA,UAAO;;;;;0BACP,8OAAC;0BAEE,cAAA,8OAAC,oHAAA,CAAA,UAAI;;;;;;;;;;;;AAIb","debugId":null}}]
+}

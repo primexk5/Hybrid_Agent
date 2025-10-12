@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 6, "column": 0}, "map": {"version":3,"sources":[],"names":[],"mappings":"","debugId":null}},
+    {"offset": {"line": 18, "column": 0}, "map": {"version":3,"sources":["file:///home/newking/Desktop/Global/ProdfestHackathon/hybrid-agent/app/page.js"],"sourcesContent":["import Image from \"next/image\";\nimport Hero from './Hero/'\n\nexport default function Home() {\n  return (\n   <>\n     <div>\n        <h1>Welcome to Hybrid Agent</h1>\n        <Hero />\n     </div>\n   </>\n  );\n}\n"],"names":[],"mappings":";;;;AAAA;;;;;;;;;AAGe,SAAS;IACtB,qBACC;kBACE,cAAA,8OAAC;;8BACE,8OAAC;8BAAG;;;;;;8BACJ,8OAAC;;;;;;;;;;;;AAIT","debugId":null}}]
+}
