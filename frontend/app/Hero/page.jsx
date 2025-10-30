@@ -1,22 +1,27 @@
+import React from 'react';
+import HeroCards from '../components/Molecules/HeroCards';
+import Slider from '../components/Molecules/Slider';
+import { FaArrowDown } from 'react-icons/fa';
 
-import HeroCards from '../components/Molecules/HeroCards'
-
-const page = () => {
+const Hero = () => {
   return (
-    <>
-    
-    <div className='flex flex-col justify-center h-screen px-6 sm:px-12 md:px-24 lg:px-48 xl:px-60'>
-      <div
-        className="absolute inset-0 -z-10 bg-cover bg-center"
-        style={{
-          backgroundImage: "url('/bguuu5.png')",
-        }}
-      />
-      <HeroCards />
-    </div>
-    </>
-    
-  )
-}
+    <main
+      className="relative min-h-screen flex flex-col items-center justify-center pt-24 md:pt-0 bg-cover bg-center"
+      style={{ backgroundImage: `url('/bgttt.avif')` }}
+    >
+      <div className="container mx-auto flex flex-col lg:flex-row items-center justify-center gap-8 px-4 md:px-10 lg:px-20 xl:px-16 h-full">
+        <div className="w-full lg:w-1/2">
+          <HeroCards />
+        </div>
+        <div className="w-full lg:w-1/2 mt-8 lg:mt-0">
+          <Slider />
+        </div>
+      </div>
+      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 text-white animate-bounce hidden md:block">
+        <FaArrowDown size={24} />
+      </div>
+    </main>
+  );
+};
 
-export default page
+export default Hero;

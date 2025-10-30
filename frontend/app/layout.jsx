@@ -1,6 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import Navbar from "./components/Molecules/navbar";
 import Footer from "./components/Molecules/Footer";
+import { ThemeProvider } from "./components/Atoms/ThemeProvider";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
 
@@ -22,14 +23,16 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <Toaster />
-        <Navbar/>
-        {children}
-        <Footer/>
-      </body>
+      <ThemeProvider>
+        <body
+          className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black min-h-screen flex flex-col `}
+        >
+          <Toaster />
+          <Navbar />
+          {children}
+          <Footer />
+        </body>
+      </ThemeProvider>
     </html>
   );
 }

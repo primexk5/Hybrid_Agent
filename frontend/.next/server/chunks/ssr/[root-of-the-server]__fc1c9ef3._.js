@@ -38,13 +38,13 @@ const __TURBOPACK__default__export__ = (0, __TURBOPACK__imported__module__$5b$pr
 }, "[project]/app/components/Molecules/HeroCards.jsx", "default");
 }),
 "[project]/app/components/Molecules/HeroCards.jsx [app-rsc] (ecmascript)": ((__turbopack_context__) => {
-"use strict";
 
-var __TURBOPACK__imported__module__$5b$project$5d2f$app$2f$components$2f$Molecules$2f$HeroCards$2e$jsx__$5b$app$2d$rsc$5d$__$28$client__reference__proxy$29$__$3c$module__evaluation$3e$__ = __turbopack_context__.i("[project]/app/components/Molecules/HeroCards.jsx [app-rsc] (client reference proxy) <module evaluation>");
-var __TURBOPACK__imported__module__$5b$project$5d2f$app$2f$components$2f$Molecules$2f$HeroCards$2e$jsx__$5b$app$2d$rsc$5d$__$28$client__reference__proxy$29$__ = __turbopack_context__.i("[project]/app/components/Molecules/HeroCards.jsx [app-rsc] (client reference proxy)");
-;
-__turbopack_context__.n(__TURBOPACK__imported__module__$5b$project$5d2f$app$2f$components$2f$Molecules$2f$HeroCards$2e$jsx__$5b$app$2d$rsc$5d$__$28$client__reference__proxy$29$__);
-}),
+var { m: module, e: exports } = __turbopack_context__;
+{
+const e = new Error("Could not parse module '[project]/app/components/Molecules/HeroCards.jsx'\n\nExpression expected");
+e.code = 'MODULE_UNPARSABLE';
+throw e;
+}}),
 "[project]/app/Hero/page.jsx [app-rsc] (ecmascript)": ((__turbopack_context__) => {
 "use strict";
 

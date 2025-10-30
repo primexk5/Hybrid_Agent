@@ -17,13 +17,13 @@ const HeroCards = () => {
   return (
     <>
       <div className='flex flex-col justify-center items-center md:items-start text-center md:text-start text-white'>
-        <div className="w-full max-w-3xl">
-          <div className='font-mono text-xl sm:text-5xl lg:text-6xl'>
+        <div className="w-full">
+          <div className='font-mono text-3xl sm:text-5xl lg:text-4xl'>
             <h1 className='font-extrabold pb-4 md:pb-8'>
               <b className='text-teal-800 font-extrabold'>HYBRID</b>AGENT
             </h1>
             <div className=''>
-              <div className="w-full text-lg sm:text-xl md:text-3xl leading-relaxed space-y-2">
+              <div className="w-full text-lg sm:text-xl md:text-2xl lg:text-3xl leading-relaxed space-y-2">
                 <p>A highly secure way to receive commissions
                   <b className='text-teal-500'> LOCALLY</b> & <b className='text-teal-500'>INTERNATIONALLY</b>
                 </p>

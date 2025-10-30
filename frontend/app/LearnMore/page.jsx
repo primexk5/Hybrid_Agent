@@ -3,11 +3,11 @@ import React from 'react'
 const page = () => {
   return (
     <>
-      <main className='min-h-screen bg-white text-gray-600 flex items-center py-20 pt-32 md:pt-40 px-6 sm:px-12 md:px-24 lg:px-32'>
+      <main className='min-h-screen bg-black text-white text-centergray-600 flex items-center py-20 pt-32 md:pt-40 px-6 sm:px-12 md:px-24 lg:px-20'>
         <div className="flex flex-col lg:flex-row justify-center items-center gap-16 lg:gap-24 max-w-7xl mx-auto">
           {/* Text Content */}
           <div className='w-full lg:w-3/5 order-2 lg:order-1 text-center lg:text-left'>
-            <h1 className="text-3xl md:text-4xl pb-4 font-extrabold text-gray-800">
+            <h1 className="text-3xl md:text-4xl pb-4 font-extrabold text-gray-300">
               <span className="text-teal-800">Why HYBRID</span>Agent?
             </h1>
             <p className="text-base md:text-lg font-mono leading-relaxed">
