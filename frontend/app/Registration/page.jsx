@@ -1,18 +1,33 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import toast, { Toaster } from 'react-hot-toast';
-import { FiUser, FiAtSign, FiPhone, FiMail, FiEdit } from 'react-icons/fi';
+import { FiUser, FiAtSign, FiPhone, FiMail, FiEdit, FiUpload, FiUsers, FiHeart, FiLock } from 'react-icons/fi';
 
 const page = () => {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     fullName: '',
     userName: '',
     phoneNumber: '',
     email: '',
     bio: '',
+    userType: 'agent',
+    gender: '',
+    password: '',
+    confirmPassword: '',
+    profilePicture: null,
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    // If user is already logged in, redirect to their profile
+    if (localStorage.getItem('currentUser')) {
+      toast.success('You are already logged in!');
+      router.push('/Profile');
+    }
+  }, [router]);
 
   const validateForm = () => {
     const newErrors = {};
@@ -28,6 +43,16 @@ const page = () => {
     } else if (!/^\+?[1-9]\d{1,14}$/.test(formData.phoneNumber)) {
       newErrors.phoneNumber = 'Phone number is invalid.';
     }
+    if (!formData.userType) newErrors.userType = 'Please select a user type.';
+    if (!formData.gender) newErrors.gender = 'Please select a gender.';
+    if (!formData.password) {
+      newErrors.password = 'Password is required.';
+    } else if (formData.password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters.';
+    }
+    if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match.';
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -35,13 +60,17 @@ const page = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (e.target.type === 'file') {
+      setFormData((prev) => ({ ...prev, [name]: e.target.files[0] }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) {
-      toast.error('Please fix the errors before submitting.');
+      toast.error('Please fill all fields before submitting.');
       return;
     }
 
@@ -63,8 +92,10 @@ const page = () => {
       loading: 'Registering...',
       success: (message) => {
         setIsSubmitting(false);
-        // Reset form or redirect user
-        setFormData({ fullName: '', userName: '', phoneNumber: '', email: '', bio: '' });
+        // show a success toast explicitly with custom duration
+        toast.success(message, { duration: 1500 });
+        // wait for the toast to be visible, then navigate
+        setTimeout(() => router.push('/Profile'), 700);
         return <b>{message}</b>;
       },
       error: (err) => {
@@ -76,7 +107,7 @@ const page = () => {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center bg-black bg-cover bg-center py-12 px-4 sm:px-6 lg:px-8"
+      className="min-h-screen flex items-center justify-center bg-black  bg-cover bg-center mt-20 py-12 px-4 sm:px-6 lg:px-8"
       style={{ backgroundImage: `url('/bgttt.avif')` }}
     >
       <Toaster position="top-center" reverseOrder={false} />
@@ -122,10 +153,66 @@ const page = () => {
                 <label htmlFor="email" className="block text-sm font-medium text-gray-400">Email</label>
                 <div className="mt-1 relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-teal-600 dark:text-teal-400"><FiMail /></span>
-                  <input id="email" name="email" type="email" placeholder='you@domain.com' value={formData.email} onChange={handleChange} aria-invalid={!!errors.email} required className='w-full pl-10 border border-gray-200 dark:border-gray-600 outline-none p-3 rounded-lg ' />
+                  <input id="email" name="email" type="email" placeholder='you@domain.com' value={formData.email} onChange={handleChange} aria-invalid={!!errors.email} required className='w-full pl-10 border border-gray-200 dark:border-gray-600 outline-none p-3 text-gray-200 rounded-lg ' />
                 </div>
                 {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
               </div>
+            </div>
+
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="userType" className="block text-sm font-medium text-gray-400">I am an</label>
+                <div className="mt-1 relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-teal-600 dark:text-teal-400"><FiUsers /></span>
+                  <select id="userType" name="userType" value={formData.userType} onChange={handleChange} aria-invalid={!!errors.userType} required className='w-full pl-10 border border-gray-200 dark:border-gray-600 text-gray-300 outline-none p-3 rounded-lg bg-black'>
+                    <option value="agent">Agent</option>
+                    <option value="owner">Owner</option>
+                  </select>
+                </div>
+                {errors.userType && <p className="text-red-500 text-sm mt-1">{errors.userType}</p>}
+              </div>
+
+              <div>
+                <label htmlFor="gender" className="block text-sm font-medium text-gray-400">Gender</label>
+                <div className="mt-1 relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-teal-600 dark:text-teal-400"><FiHeart /></span>
+                  <select id="gender" name="gender" value={formData.gender} onChange={handleChange} aria-invalid={!!errors.gender} required className='w-full pl-10 border border-gray-200 dark:border-gray-600 text-gray-300 outline-none p-3 rounded-lg bg-black'>
+                    <option value="">Select Gender</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                  </select>
+                </div>
+                {errors.gender && <p className="text-red-500 text-sm mt-1">{errors.gender}</p>}
+              </div>
+            </div>
+
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-400">Password</label>
+                <div className="mt-1 relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-teal-600 dark:text-teal-400"><FiLock /></span>
+                  <input id="password" name="password" type="password" value={formData.password} onChange={handleChange} aria-invalid={!!errors.password} required className='w-full pl-10 border border-gray-200 dark:border-gray-600 text-gray-200 outline-none p-3 rounded-lg bg-black' />
+                </div>
+                {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
+              </div>
+
+              <div>
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-400">Confirm Password</label>
+                <div className="mt-1 relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-teal-600 dark:text-teal-400"><FiLock /></span>
+                  <input id="confirmPassword" name="confirmPassword" type="password" value={formData.confirmPassword} onChange={handleChange} aria-invalid={!!errors.confirmPassword} required className='w-full pl-10 border border-gray-200 dark:border-gray-600 text-gray-200 outline-none p-3 rounded-lg bg-black' />
+                </div>
+                {errors.confirmPassword && <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>}
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <label htmlFor="profilePicture" className="block text-sm font-medium text-gray-400">Profile Picture</label>
+              <div className="mt-1 relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-teal-600 dark:text-teal-400"><FiUpload /></span>
+                <input id="profilePicture" name="profilePicture" type="file" onChange={handleChange} accept="image/*" className='w-full pl-10 border border-gray-200 dark:border-gray-600 text-gray-400 outline-none p-3 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100' />
+              </div>
+              {errors.profilePicture && <p className="text-red-500 text-sm mt-1">{errors.profilePicture}</p>}
             </div>
 
             <div className="mt-4">
@@ -141,6 +228,8 @@ const page = () => {
                 {isSubmitting ? 'Registering...' : 'Create account'}
               </button>
             </div>
+
+            <p className="mt-4 text-center text-sm text-gray-400">Already registered? <a className='text-teal-700 underline' href="/Login">Login</a></p>
 
             <p className="mt-4 text-center text-xs text-gray-400">By creating an account you agree to our Terms of Service.</p>
           </form>

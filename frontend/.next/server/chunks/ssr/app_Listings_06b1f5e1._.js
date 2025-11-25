@@ -19,6 +19,13 @@ const propertiesData = [
         bedrooms: 5,
         landSize: '2 acres',
         description: 'A stunning luxury villa with panoramic views, a private pool, and state-of-the-art amenities.',
+        agent: {
+            name: 'Jane Doe',
+            location: 'Beverly Hills, CA',
+            phone: '+1-555-0101',
+            email: 'jane.doe@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/women/10.jpg'
+        },
         reviews: [
             {
                 id: 1,
@@ -48,7 +55,14 @@ const propertiesData = [
         location: 'The Cotswolds, UK',
         bedrooms: 3,
         landSize: '0.5 acres',
-        description: 'A charming and cozy cottage nestled in the heart of the picturesque Cotswolds.'
+        description: 'A charming and cozy cottage nestled in the heart of the picturesque Cotswolds.',
+        agent: {
+            name: 'John Smith',
+            location: 'London, UK',
+            phone: '+44-20-7946-0958',
+            email: 'john.smith@hybridagent.co.uk',
+            avatar: 'https://randomuser.me/api/portraits/men/11.jpg'
+        }
     },
     {
         id: 3,
@@ -61,6 +75,13 @@ const propertiesData = [
         bedrooms: 2,
         landSize: 'N/A',
         description: 'A sleek and modern apartment in a prime downtown location, perfect for urban living.',
+        agent: {
+            name: 'Alex Johnson',
+            location: 'New York, NY',
+            phone: '+1-555-0103',
+            email: 'alex.j@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/lego/1.jpg'
+        },
         reviews: [
             {
                 id: 1,
@@ -82,7 +103,14 @@ const propertiesData = [
         location: 'Malibu, CA',
         bedrooms: 4,
         landSize: '1 acre',
-        description: 'An exquisite beach house with direct access to the ocean and breathtaking sunset views.'
+        description: 'An exquisite beach house with direct access to the ocean and breathtaking sunset views.',
+        agent: {
+            name: 'Emily White',
+            location: 'Malibu, CA',
+            phone: '+1-555-0104',
+            email: 'emily.white@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/women/12.jpg'
+        }
     },
     {
         id: 5,
@@ -94,7 +122,14 @@ const propertiesData = [
         location: 'Aspen, CO',
         bedrooms: 4,
         landSize: '5 acres',
-        description: 'A rustic yet luxurious mountain cabin, ideal for getaways and enjoying nature.'
+        description: 'A rustic yet luxurious mountain cabin, ideal for getaways and enjoying nature.',
+        agent: {
+            name: 'Michael Brown',
+            location: 'Aspen, CO',
+            phone: '+1-555-0105',
+            email: 'michael.b@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/men/13.jpg'
+        }
     },
     {
         id: 6,
@@ -106,7 +141,14 @@ const propertiesData = [
         location: 'Chicago, IL',
         bedrooms: 1,
         landSize: 'N/A',
-        description: 'A stylish urban loft with an open floor plan, high ceilings, and industrial-chic design.'
+        description: 'A stylish urban loft with an open floor plan, high ceilings, and industrial-chic design.',
+        agent: {
+            name: 'Jane Doe',
+            location: 'Beverly Hills, CA',
+            phone: '+1-555-0101',
+            email: 'jane.doe@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/women/10.jpg'
+        }
     },
     {
         id: 7,
@@ -118,7 +160,14 @@ const propertiesData = [
         location: 'Key West, FL',
         bedrooms: 2,
         landSize: '0.3 acres',
-        description: 'A charming seaside bungalow with a private dock and beautiful ocean views.'
+        description: 'A charming seaside bungalow with a private dock and beautiful ocean views.',
+        agent: {
+            name: 'John Smith',
+            location: 'Miami, FL',
+            phone: '+1-555-0102',
+            email: 'john.smith@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/men/11.jpg'
+        }
     },
     {
         id: 8,
@@ -130,7 +179,14 @@ const propertiesData = [
         location: 'Miami, FL',
         bedrooms: 3,
         landSize: 'N/A',
-        description: 'Luxurious penthouse suite with a rooftop terrace and stunning city skyline views.'
+        description: 'Luxurious penthouse suite with a rooftop terrace and stunning city skyline views.',
+        agent: {
+            name: 'Alex Johnson',
+            location: 'Miami, FL',
+            phone: '+1-555-0103',
+            email: 'alex.j@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/lego/1.jpg'
+        }
     },
     {
         id: 9,
@@ -142,7 +198,14 @@ const propertiesData = [
         location: 'Rural, TX',
         bedrooms: 4,
         landSize: '10 acres',
-        description: 'A classic farmhouse with modern updates, surrounded by acres of beautiful farmland.'
+        description: 'A classic farmhouse with modern updates, surrounded by acres of beautiful farmland.',
+        agent: {
+            name: 'Emily White',
+            location: 'Austin, TX',
+            phone: '+1-555-0104',
+            email: 'emily.white@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/women/12.jpg'
+        }
     },
     {
         id: 10,
@@ -154,7 +217,14 @@ const propertiesData = [
         location: 'Boston, MA',
         bedrooms: 3,
         landSize: '0.1 acres',
-        description: 'A historic townhouse in a quiet, tree-lined neighborhood, close to downtown.'
+        description: 'A historic townhouse in a quiet, tree-lined neighborhood, close to downtown.',
+        agent: {
+            name: 'Michael Brown',
+            location: 'Boston, MA',
+            phone: '+1-555-0105',
+            email: 'michael.b@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/men/13.jpg'
+        }
     },
     {
         id: 11,
@@ -166,7 +236,14 @@ const propertiesData = [
         location: 'Portland, OR',
         bedrooms: 1,
         landSize: 'N/A',
-        description: 'A compact and stylish studio loft, perfect for a single professional or artist.'
+        description: 'A compact and stylish studio loft, perfect for a single professional or artist.',
+        agent: {
+            name: 'Jane Doe',
+            location: 'Portland, OR',
+            phone: '+1-555-0101',
+            email: 'jane.doe@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/women/10.jpg'
+        }
     },
     {
         id: 12,
@@ -178,7 +255,14 @@ const propertiesData = [
         location: 'Napa Valley, CA',
         bedrooms: 6,
         landSize: '15 acres',
-        description: 'A sprawling countryside estate with vineyards, a guest house, and a large pool.'
+        description: 'A sprawling countryside estate with vineyards, a guest house, and a large pool.',
+        agent: {
+            name: 'John Smith',
+            location: 'Napa Valley, CA',
+            phone: '+1-555-0102',
+            email: 'john.smith@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/men/11.jpg'
+        }
     },
     {
         id: 13,
@@ -190,7 +274,14 @@ const propertiesData = [
         location: 'Lake Tahoe, NV',
         bedrooms: 4,
         landSize: '1.5 acres',
-        description: 'A beautiful lake house with a private beach and stunning views of the water.'
+        description: 'A beautiful lake house with a private beach and stunning views of the water.',
+        agent: {
+            name: 'Alex Johnson',
+            location: 'Lake Tahoe, NV',
+            phone: '+1-555-0103',
+            email: 'alex.j@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/lego/1.jpg'
+        }
     },
     {
         id: 14,
@@ -202,7 +293,14 @@ const propertiesData = [
         location: 'San Francisco, CA',
         bedrooms: 3,
         landSize: 'N/A',
-        description: 'An ultra-modern penthouse with floor-to-ceiling windows and 360-degree city views.'
+        description: 'An ultra-modern penthouse with floor-to-ceiling windows and 360-degree city views.',
+        agent: {
+            name: 'Michael Brown',
+            location: 'San Francisco, CA',
+            phone: '+1-555-0105',
+            email: 'michael.b@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/men/13.jpg'
+        }
     }
 ];
 const vehiclesData = [
@@ -217,6 +315,13 @@ const vehiclesData = [
         year: 2022,
         fuelType: 'Gas',
         description: 'A high-performance sports car with a powerful V8 engine and aerodynamic design.',
+        agent: {
+            name: 'Jane Doe',
+            location: 'Beverly Hills, CA',
+            phone: '+1-555-0101',
+            email: 'jane.doe@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/women/10.jpg'
+        },
         reviews: [
             {
                 id: 1,
@@ -238,7 +343,14 @@ const vehiclesData = [
         brand: 'Porsche',
         year: 2023,
         fuelType: 'Gas',
-        description: 'A luxury SUV that combines performance, comfort, and cutting-edge technology.'
+        description: 'A luxury SUV that combines performance, comfort, and cutting-edge technology.',
+        agent: {
+            name: 'John Smith',
+            location: 'New York, NY',
+            phone: '+1-555-0102',
+            email: 'john.smith@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/men/11.jpg'
+        }
     },
     {
         id: 203,
@@ -251,6 +363,13 @@ const vehiclesData = [
         year: 2023,
         fuelType: 'Electric',
         description: 'A powerful electric bike with a long-range battery, perfect for city commuting.',
+        agent: {
+            name: 'Alex Johnson',
+            location: 'Miami, FL',
+            phone: '+1-555-0103',
+            email: 'alex.j@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/lego/1.jpg'
+        },
         reviews: [
             {
                 id: 1,
@@ -280,7 +399,14 @@ const vehiclesData = [
         brand: 'BMW',
         year: 2021,
         fuelType: 'Gas',
-        description: 'A stylish convertible with a retractable hardtop, offering an exhilarating open-air driving experience.'
+        description: 'A stylish convertible with a retractable hardtop, offering an exhilarating open-air driving experience.',
+        agent: {
+            name: 'Emily White',
+            location: 'Chicago, IL',
+            phone: '+1-555-0104',
+            email: 'emily.white@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/women/12.jpg'
+        }
     },
     {
         id: 205,
@@ -292,7 +418,14 @@ const vehiclesData = [
         brand: 'Ford',
         year: 2022,
         fuelType: 'Gas',
-        description: 'A rugged and reliable pickup truck with excellent towing capacity and off-road capabilities.'
+        description: 'A rugged and reliable pickup truck with excellent towing capacity and off-road capabilities.',
+        agent: {
+            name: 'Michael Brown',
+            location: 'Austin, TX',
+            phone: '+1-555-0105',
+            email: 'michael.b@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/men/13.jpg'
+        }
     },
     {
         id: 206,
@@ -304,7 +437,14 @@ const vehiclesData = [
         brand: 'Triumph',
         year: 1978,
         fuelType: 'Gas',
-        description: 'A beautifully restored classic motorcycle, a true collector\'s item with timeless appeal.'
+        description: 'A beautifully restored classic motorcycle, a true collector\'s item with timeless appeal.',
+        agent: {
+            name: 'Jane Doe',
+            location: 'Portland, OR',
+            phone: '+1-555-0101',
+            email: 'jane.doe@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/women/10.jpg'
+        }
     },
     // Additional vehicles (continuing ids)
     {
@@ -318,6 +458,13 @@ const vehiclesData = [
         year: 2022,
         fuelType: 'Gas',
         description: 'A sporty coupe with a sleek design and a turbocharged engine for thrilling performance.',
+        agent: {
+            name: 'John Smith',
+            location: 'New York, NY',
+            phone: '+1-555-0102',
+            email: 'john.smith@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/men/11.jpg'
+        },
         reviews: [
             {
                 id: 1,
@@ -339,7 +486,14 @@ const vehiclesData = [
         brand: 'Honda',
         year: 2023,
         fuelType: 'Gas',
-        description: 'A spacious and practical minivan, perfect for families with plenty of room for passengers and cargo.'
+        description: 'A spacious and practical minivan, perfect for families with plenty of room for passengers and cargo.',
+        agent: {
+            name: 'Alex Johnson',
+            location: 'Chicago, IL',
+            phone: '+1-555-0103',
+            email: 'alex.j@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/lego/1.jpg'
+        }
     },
     {
         id: 209,
@@ -351,7 +505,14 @@ const vehiclesData = [
         brand: 'Tesla',
         year: 2023,
         fuelType: 'Electric',
-        description: 'A cutting-edge electric sedan with long range, rapid acceleration, and advanced autopilot features.'
+        description: 'A cutting-edge electric sedan with long range, rapid acceleration, and advanced autopilot features.',
+        agent: {
+            name: 'Emily White',
+            location: 'San Francisco, CA',
+            phone: '+1-555-0104',
+            email: 'emily.white@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/women/12.jpg'
+        }
     },
     {
         id: 210,
@@ -363,7 +524,14 @@ const vehiclesData = [
         brand: 'Jeep',
         year: 2022,
         fuelType: 'Gas',
-        description: 'A rugged off-road Jeep designed to conquer any terrain, with a durable frame and powerful 4x4 system.'
+        description: 'A rugged off-road Jeep designed to conquer any terrain, with a durable frame and powerful 4x4 system.',
+        agent: {
+            name: 'Michael Brown',
+            location: 'Denver, CO',
+            phone: '+1-555-0105',
+            email: 'michael.b@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/men/13.jpg'
+        }
     },
     {
         id: 211,
@@ -375,7 +543,14 @@ const vehiclesData = [
         brand: 'Ford',
         year: 2023,
         fuelType: 'Gas',
-        description: 'A reliable and spacious delivery van, perfect for businesses needing to transport goods efficiently.'
+        description: 'A reliable and spacious delivery van, perfect for businesses needing to transport goods efficiently.',
+        agent: {
+            name: 'Jane Doe',
+            location: 'New York, NY',
+            phone: '+1-555-0101',
+            email: 'jane.doe@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/women/10.jpg'
+        }
     },
     {
         id: 212,
@@ -387,7 +562,14 @@ const vehiclesData = [
         brand: 'Toyota',
         year: 2021,
         fuelType: 'Hybrid',
-        description: 'An economical hybrid hatchback with excellent fuel efficiency and a compact, city-friendly design.'
+        description: 'An economical hybrid hatchback with excellent fuel efficiency and a compact, city-friendly design.',
+        agent: {
+            name: 'John Smith',
+            location: 'Seattle, WA',
+            phone: '+1-555-0102',
+            email: 'john.smith@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/men/11.jpg'
+        }
     },
     {
         id: 213,
@@ -399,7 +581,14 @@ const vehiclesData = [
         brand: 'Mercedes-Benz',
         year: 2023,
         fuelType: 'Gas',
-        description: 'A premium luxury sedan offering unparalleled comfort, advanced technology, and a smooth, powerful ride.'
+        description: 'A premium luxury sedan offering unparalleled comfort, advanced technology, and a smooth, powerful ride.',
+        agent: {
+            name: 'Alex Johnson',
+            location: 'Beverly Hills, CA',
+            phone: '+1-555-0103',
+            email: 'alex.j@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/lego/1.jpg'
+        }
     },
     {
         id: 214,
@@ -411,7 +600,14 @@ const vehiclesData = [
         brand: 'Ducati',
         year: 2022,
         fuelType: 'Gas',
-        description: 'A high-performance sports motorcycle built for speed and agility, with a striking design.'
+        description: 'A high-performance sports motorcycle built for speed and agility, with a striking design.',
+        agent: {
+            name: 'Emily White',
+            location: 'Miami, FL',
+            phone: '+1-555-0104',
+            email: 'emily.white@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/women/12.jpg'
+        }
     }
 ];
 }),

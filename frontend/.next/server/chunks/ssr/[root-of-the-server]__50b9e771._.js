@@ -53,7 +53,7 @@ const page = ()=>{
                             }, ("TURBOPACK compile-time value", void 0)),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                 className: "text-base md:text-lg font-mono leading-relaxed",
-                                children: "In the traditional property and vehicle markets, selling agents are highly vulnerable to commission fraud due to the lack of a secure, standardized payment system. To solve this, we propose a hybrid Web2 and Web3 platform that creates a professional, automated solution for fair commission payments. Our user-friendly Web2 interface allows agents and owners to create deals, while a core Web3 smart contract serves as a tamper-proof digital escrow. Once a sale is confirmed, the smart contract automatically releases the pre-funded commission, eliminating the risk of non-payment. Initially targeting independent agents in local markets, our platform will scale by leveraging its borderless blockchain technology to expand into other geographic regions and high-value sales sectors, establishing a new standard for trust and accountability in the real-estate industry."
+                                children: "In the traditional property and vehicle markets, selling agents are highly vulnerable to commission fraud due to the lack of a secure, standardized payment system. To solve this, we propose a hybrid Web2 platform that creates a professional, automated solution for fair commission payments. Our user-friendly Web2 interface allows agents and owners to create deals, with just your bank account. Once a sale is confirmed, our platform automatically releases the pre-funded commission, eliminating the risk of non-payment. Initially targeting independent agents in local markets, our platform will scale by leveraging its borderless technology to expand into other geographic regions and high-value sales sectors, establishing a new standard for trust and accountability in the real-estate industry."
                             }, void 0, false, {
                                 fileName: "[project]/app/LearnMore/page.jsx",
                                 lineNumber: 13,
@@ -73,12 +73,12 @@ const page = ()=>{
                             alt: "Abstract visual representing hybrid technology"
                         }, void 0, false, {
                             fileName: "[project]/app/LearnMore/page.jsx",
-                            lineNumber: 29,
+                            lineNumber: 28,
                             columnNumber: 13
                         }, ("TURBOPACK compile-time value", void 0))
                     }, void 0, false, {
                         fileName: "[project]/app/LearnMore/page.jsx",
-                        lineNumber: 28,
+                        lineNumber: 27,
                         columnNumber: 11
                     }, ("TURBOPACK compile-time value", void 0))
                 ]

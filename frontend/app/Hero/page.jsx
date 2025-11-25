@@ -9,7 +9,7 @@ const Hero = () => {
       className="relative min-h-screen flex flex-col items-center justify-center pt-24 md:pt-0 bg-cover bg-center"
       style={{ backgroundImage: `url('/bgttt.avif')` }}
     >
-      <div className="container mx-auto flex flex-col lg:flex-row items-center justify-center gap-8 px-4 md:px-10 lg:px-20 xl:px-16 h-full">
+      <div className="container mx-auto flex flex-col lg:flex-row items-center justify-center gap-8 px-4 md:px-10 lg:px-20 xl:px-14 h-full">
         <div className="w-full lg:w-1/2">
           <HeroCards />
         </div>

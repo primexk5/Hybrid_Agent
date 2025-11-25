@@ -11,14 +11,14 @@ const FAQItem = ({ question, answer }) => {
   return (
     <div className="border-b border-gray-200 dark:border-gray-700 py-4">
       <button
-        className="w-full flex justify-between items-center text-left font-mono text-gray-800 dark:text-gray-200"
+        className="w-full flex justify-between items-center text-left font-mono text-gray-100 dark:text-gray-200"
         onClick={() => setIsOpen(!isOpen)}
       >
         <span className="font-semibold">{question}</span>
         <FiChevronDown className={`transform transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
       {isOpen && (
-        <div className="mt-3 text-gray-600 dark:text-gray-400 font-mono text-sm leading-relaxed">
+        <div className="mt-3 text-gray-100 dark:text-gray-100 font-mono text-sm leading-relaxed">
           {answer}
         </div>
       )}
@@ -30,7 +30,7 @@ const page = () => {
   return (
    <>
       <div className='min-h-screen bg-black pt-28 md:pt-40 pb-20'>
-        <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+        <div className=' mx-auto px-4 xl:px-60 sm:px-6 lg:px-8'>
           <div className='text-center w-full flex flex-col justify-center items-center mb-16'>
             <h2 className='text-3xl md:text-4xl font-bold font-mono mb-3 text-teal-600 '>Contact Us</h2>
             <p className='text-lg text-gray-100 font-mono max-w-2xl'>

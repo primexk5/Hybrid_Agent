@@ -1,7 +1,8 @@
 import React from 'react';
 import Link from 'next/link';
-import { FiMapPin, FiHome, FiGrid, FiDollarSign, FiStar } from 'react-icons/fi';
+import { FiMapPin, FiHome, FiGrid, FiDollarSign, FiStar, FiUser, FiPhone, FiMail, FiAward } from 'react-icons/fi';
 import { propertiesData, vehiclesData } from '../listings';
+import { leaderboardData } from '../../Leaderboard/leaderboard';
 
 const StarRating = ({ rating }) => (
   <div className="flex items-center">
@@ -19,6 +20,7 @@ const ItemDetailsPage = ({ params }) => {
 
   const item = property || vehicle;
   const isVehicle = !!vehicle;
+  const agentRankData = item ? leaderboardData.find(agent => agent.name === item.agent?.name) : null;
 
   if (!item) {
     return (
@@ -29,31 +31,42 @@ const ItemDetailsPage = ({ params }) => {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-black text-white py-8 px-4 sm:py-12 mt-20 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
         <div className="mb-6">
-          <Link href="/Listings" className="text-teal-400 hover:underline">← Back to Listings</Link>
+          <Link href="/Listings" className="text-teal-400 hover:text-teal-100">← Back to Listings</Link>
         </div>
 
         <div className="bg-white/5 rounded-2xl shadow-2xl overflow-hidden">
-          <div className="md:flex">
-            <div className="md:w-1/2">
-              <img src={item.image} alt={item.name} className="w-full h-96 object-cover" />
+          <div className="flex flex-col md:flex-row">
+            <div className="md:w-1/2 w-full">
+              <div className="w-full h-64 sm:h-80 md:h-full">
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  className="w-full h-full object-cover"
+                  style={{ maxHeight: '640px' }}
+                />
+              </div>
             </div>
-            <div className="md:w-1/2 p-8">
-              <div className="flex items-start justify-between">
-                <div>
-                  <h1 className="text-4xl font-bold text-teal-400">{item.name}</h1>
-                  <p className="text-gray-300 mt-2">{isVehicle ? item.brand + ' • ' + (item.year || '') : item.location}</p>
+
+            <div className="md:w-1/2 w-full p-6 sm:p-8">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex-1">
+                  <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-teal-400 leading-tight">{item.name}</h1>
+                  <p className="text-gray-300 mt-2 text-sm sm:text-base">
+                    {isVehicle ? `${item.brand}${item.year ? ' • ' + item.year : ''}` : item.location}
+                  </p>
                 </div>
-                <div>
-                  <span className={`text-lg font-semibold px-4 py-1 rounded-full ${item.status === 'Active' ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'}`}>
+
+                <div className="flex-shrink-0">
+                  <span className={`text-sm sm:text-base font-semibold px-3 py-1 rounded-full ${item.status === 'Active' ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'}`}>
                     {item.status}
                   </span>
                 </div>
               </div>
 
-              <p className="text-gray-300 mt-6 mb-6">{item.description}</p>
+              <p className="text-gray-300 mt-6 mb-6 text-sm sm:text-base leading-relaxed">{item.description}</p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex items-center gap-3">
@@ -138,23 +151,67 @@ const ItemDetailsPage = ({ params }) => {
           </div>
         </div>
 
+        {item.agent && (
+          <div className="mt-8 sm:mt-12">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-teal-400 mb-4 sm:mb-6">Listed By</h2>
+            <div className="bg-white/10 p-4 sm:p-6 rounded-2xl shadow-lg border border-gray-800 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <img src={item.agent.avatar} alt={item.agent.name} className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-teal-500 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                  <div className="flex items-center gap-3">
+                    <h3 className="text-lg sm:text-2xl font-bold truncate">{item.agent.name}</h3>
+                    {agentRankData && (
+                      <div className="flex items-center gap-1 bg-teal-500/20 text-teal-300 px-2 py-1 rounded-full text-xs sm:text-sm font-semibold">
+                        <FiAward />
+                        <span>Rank #{agentRankData.rank}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 text-gray-400 mt-2">
+                  <FiMapPin />
+                  <span className="text-sm truncate">{item.agent.location}</span>
+                </div>
+
+                <div className="flex items-center gap-4 mt-4 flex-wrap">
+                  {item.agent.phone && (
+                    <a href={`tel:${item.agent.phone}`} className="flex items-center gap-2 text-teal-400 hover:underline text-sm">
+                      <FiPhone />
+                      <span>{item.agent.phone}</span>
+                    </a>
+                  )}
+                  {item.agent.email && (
+                    <a href={`mailto:${item.agent.email}`} className="flex items-center gap-2 text-teal-400 hover:underline text-sm">
+                      <FiMail />
+                      <span className="truncate">{item.agent.email}</span>
+                    </a>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {item.reviews && item.reviews.length > 0 && (
-          <div className="mt-12">
-            <h2 className="text-3xl font-bold text-teal-400 mb-6">Reviews</h2>
-            <div className="space-y-8">
+          <div className="mt-8 sm:mt-12">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-teal-400 mb-4 sm:mb-6">Reviews</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {item.reviews.map((review) => (
-                <div key={review.id} className="bg-white/10 p-6 rounded-2xl shadow-lg border border-gray-800 backdrop-blur-sm">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center">
-                      <img src={review.avatar} alt={review.author} className="w-12 h-12 rounded-full mr-4 border-2 border-teal-500" />
+                <div key={review.id} className="bg-white/10 p-4 sm:p-6 rounded-2xl shadow-lg border border-gray-800 backdrop-blur-sm">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-start gap-3">
+                      <img src={review.avatar} alt={review.author} className="w-10 h-10 sm:w-12 sm:h-12 rounded-full mr-2 border-2 border-teal-500 flex-shrink-0" />
                       <div>
-                        <h4 className="font-bold text-lg">{review.author}</h4>
-                        <p className="text-sm text-gray-400">{review.date}</p>
+                        <h4 className="font-bold text-sm sm:text-lg">{review.author}</h4>
+                        <p className="text-xs sm:text-sm text-gray-400">{review.date}</p>
                       </div>
                     </div>
-                    <StarRating rating={review.rating} />
+                    <div className="ml-4">
+                      <StarRating rating={review.rating} />
+                    </div>
                   </div>
-                  <p className="text-gray-300 leading-relaxed">{review.text}</p>
+                  <p className="text-gray-300 text-sm sm:text-base leading-relaxed">{review.text}</p>
                 </div>
               ))}
             </div>
@@ -162,7 +219,7 @@ const ItemDetailsPage = ({ params }) => {
         )}
 
         {(!item.reviews || item.reviews.length === 0) && (
-            <p className="text-center text-gray-400 mt-12">No reviews for this item yet.</p>
+          <p className="text-center text-gray-400 mt-8 sm:mt-12">No reviews for this item yet.</p>
         )}
       </div>
     </div>

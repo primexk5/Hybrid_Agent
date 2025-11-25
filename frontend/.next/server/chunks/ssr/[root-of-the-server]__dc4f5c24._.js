@@ -32,6 +32,13 @@ const propertiesData = [
         bedrooms: 5,
         landSize: '2 acres',
         description: 'A stunning luxury villa with panoramic views, a private pool, and state-of-the-art amenities.',
+        agent: {
+            name: 'Jane Doe',
+            location: 'Beverly Hills, CA',
+            phone: '+1-555-0101',
+            email: 'jane.doe@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/women/10.jpg'
+        },
         reviews: [
             {
                 id: 1,
@@ -61,7 +68,14 @@ const propertiesData = [
         location: 'The Cotswolds, UK',
         bedrooms: 3,
         landSize: '0.5 acres',
-        description: 'A charming and cozy cottage nestled in the heart of the picturesque Cotswolds.'
+        description: 'A charming and cozy cottage nestled in the heart of the picturesque Cotswolds.',
+        agent: {
+            name: 'John Smith',
+            location: 'London, UK',
+            phone: '+44-20-7946-0958',
+            email: 'john.smith@hybridagent.co.uk',
+            avatar: 'https://randomuser.me/api/portraits/men/11.jpg'
+        }
     },
     {
         id: 3,
@@ -74,6 +88,13 @@ const propertiesData = [
         bedrooms: 2,
         landSize: 'N/A',
         description: 'A sleek and modern apartment in a prime downtown location, perfect for urban living.',
+        agent: {
+            name: 'Alex Johnson',
+            location: 'New York, NY',
+            phone: '+1-555-0103',
+            email: 'alex.j@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/lego/1.jpg'
+        },
         reviews: [
             {
                 id: 1,
@@ -95,7 +116,14 @@ const propertiesData = [
         location: 'Malibu, CA',
         bedrooms: 4,
         landSize: '1 acre',
-        description: 'An exquisite beach house with direct access to the ocean and breathtaking sunset views.'
+        description: 'An exquisite beach house with direct access to the ocean and breathtaking sunset views.',
+        agent: {
+            name: 'Emily White',
+            location: 'Malibu, CA',
+            phone: '+1-555-0104',
+            email: 'emily.white@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/women/12.jpg'
+        }
     },
     {
         id: 5,
@@ -107,7 +135,14 @@ const propertiesData = [
         location: 'Aspen, CO',
         bedrooms: 4,
         landSize: '5 acres',
-        description: 'A rustic yet luxurious mountain cabin, ideal for getaways and enjoying nature.'
+        description: 'A rustic yet luxurious mountain cabin, ideal for getaways and enjoying nature.',
+        agent: {
+            name: 'Michael Brown',
+            location: 'Aspen, CO',
+            phone: '+1-555-0105',
+            email: 'michael.b@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/men/13.jpg'
+        }
     },
     {
         id: 6,
@@ -119,7 +154,14 @@ const propertiesData = [
         location: 'Chicago, IL',
         bedrooms: 1,
         landSize: 'N/A',
-        description: 'A stylish urban loft with an open floor plan, high ceilings, and industrial-chic design.'
+        description: 'A stylish urban loft with an open floor plan, high ceilings, and industrial-chic design.',
+        agent: {
+            name: 'Jane Doe',
+            location: 'Beverly Hills, CA',
+            phone: '+1-555-0101',
+            email: 'jane.doe@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/women/10.jpg'
+        }
     },
     {
         id: 7,
@@ -131,7 +173,14 @@ const propertiesData = [
         location: 'Key West, FL',
         bedrooms: 2,
         landSize: '0.3 acres',
-        description: 'A charming seaside bungalow with a private dock and beautiful ocean views.'
+        description: 'A charming seaside bungalow with a private dock and beautiful ocean views.',
+        agent: {
+            name: 'John Smith',
+            location: 'Miami, FL',
+            phone: '+1-555-0102',
+            email: 'john.smith@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/men/11.jpg'
+        }
     },
     {
         id: 8,
@@ -143,7 +192,14 @@ const propertiesData = [
         location: 'Miami, FL',
         bedrooms: 3,
         landSize: 'N/A',
-        description: 'Luxurious penthouse suite with a rooftop terrace and stunning city skyline views.'
+        description: 'Luxurious penthouse suite with a rooftop terrace and stunning city skyline views.',
+        agent: {
+            name: 'Alex Johnson',
+            location: 'Miami, FL',
+            phone: '+1-555-0103',
+            email: 'alex.j@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/lego/1.jpg'
+        }
     },
     {
         id: 9,
@@ -155,7 +211,14 @@ const propertiesData = [
         location: 'Rural, TX',
         bedrooms: 4,
         landSize: '10 acres',
-        description: 'A classic farmhouse with modern updates, surrounded by acres of beautiful farmland.'
+        description: 'A classic farmhouse with modern updates, surrounded by acres of beautiful farmland.',
+        agent: {
+            name: 'Emily White',
+            location: 'Austin, TX',
+            phone: '+1-555-0104',
+            email: 'emily.white@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/women/12.jpg'
+        }
     },
     {
         id: 10,
@@ -167,7 +230,14 @@ const propertiesData = [
         location: 'Boston, MA',
         bedrooms: 3,
         landSize: '0.1 acres',
-        description: 'A historic townhouse in a quiet, tree-lined neighborhood, close to downtown.'
+        description: 'A historic townhouse in a quiet, tree-lined neighborhood, close to downtown.',
+        agent: {
+            name: 'Michael Brown',
+            location: 'Boston, MA',
+            phone: '+1-555-0105',
+            email: 'michael.b@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/men/13.jpg'
+        }
     },
     {
         id: 11,
@@ -179,7 +249,14 @@ const propertiesData = [
         location: 'Portland, OR',
         bedrooms: 1,
         landSize: 'N/A',
-        description: 'A compact and stylish studio loft, perfect for a single professional or artist.'
+        description: 'A compact and stylish studio loft, perfect for a single professional or artist.',
+        agent: {
+            name: 'Jane Doe',
+            location: 'Portland, OR',
+            phone: '+1-555-0101',
+            email: 'jane.doe@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/women/10.jpg'
+        }
     },
     {
         id: 12,
@@ -191,7 +268,14 @@ const propertiesData = [
         location: 'Napa Valley, CA',
         bedrooms: 6,
         landSize: '15 acres',
-        description: 'A sprawling countryside estate with vineyards, a guest house, and a large pool.'
+        description: 'A sprawling countryside estate with vineyards, a guest house, and a large pool.',
+        agent: {
+            name: 'John Smith',
+            location: 'Napa Valley, CA',
+            phone: '+1-555-0102',
+            email: 'john.smith@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/men/11.jpg'
+        }
     },
     {
         id: 13,
@@ -203,7 +287,14 @@ const propertiesData = [
         location: 'Lake Tahoe, NV',
         bedrooms: 4,
         landSize: '1.5 acres',
-        description: 'A beautiful lake house with a private beach and stunning views of the water.'
+        description: 'A beautiful lake house with a private beach and stunning views of the water.',
+        agent: {
+            name: 'Alex Johnson',
+            location: 'Lake Tahoe, NV',
+            phone: '+1-555-0103',
+            email: 'alex.j@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/lego/1.jpg'
+        }
     },
     {
         id: 14,
@@ -215,7 +306,14 @@ const propertiesData = [
         location: 'San Francisco, CA',
         bedrooms: 3,
         landSize: 'N/A',
-        description: 'An ultra-modern penthouse with floor-to-ceiling windows and 360-degree city views.'
+        description: 'An ultra-modern penthouse with floor-to-ceiling windows and 360-degree city views.',
+        agent: {
+            name: 'Michael Brown',
+            location: 'San Francisco, CA',
+            phone: '+1-555-0105',
+            email: 'michael.b@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/men/13.jpg'
+        }
     }
 ];
 const vehiclesData = [
@@ -230,6 +328,13 @@ const vehiclesData = [
         year: 2022,
         fuelType: 'Gas',
         description: 'A high-performance sports car with a powerful V8 engine and aerodynamic design.',
+        agent: {
+            name: 'Jane Doe',
+            location: 'Beverly Hills, CA',
+            phone: '+1-555-0101',
+            email: 'jane.doe@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/women/10.jpg'
+        },
         reviews: [
             {
                 id: 1,
@@ -251,7 +356,14 @@ const vehiclesData = [
         brand: 'Porsche',
         year: 2023,
         fuelType: 'Gas',
-        description: 'A luxury SUV that combines performance, comfort, and cutting-edge technology.'
+        description: 'A luxury SUV that combines performance, comfort, and cutting-edge technology.',
+        agent: {
+            name: 'John Smith',
+            location: 'New York, NY',
+            phone: '+1-555-0102',
+            email: 'john.smith@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/men/11.jpg'
+        }
     },
     {
         id: 203,
@@ -264,6 +376,13 @@ const vehiclesData = [
         year: 2023,
         fuelType: 'Electric',
         description: 'A powerful electric bike with a long-range battery, perfect for city commuting.',
+        agent: {
+            name: 'Alex Johnson',
+            location: 'Miami, FL',
+            phone: '+1-555-0103',
+            email: 'alex.j@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/lego/1.jpg'
+        },
         reviews: [
             {
                 id: 1,
@@ -293,7 +412,14 @@ const vehiclesData = [
         brand: 'BMW',
         year: 2021,
         fuelType: 'Gas',
-        description: 'A stylish convertible with a retractable hardtop, offering an exhilarating open-air driving experience.'
+        description: 'A stylish convertible with a retractable hardtop, offering an exhilarating open-air driving experience.',
+        agent: {
+            name: 'Emily White',
+            location: 'Chicago, IL',
+            phone: '+1-555-0104',
+            email: 'emily.white@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/women/12.jpg'
+        }
     },
     {
         id: 205,
@@ -305,7 +431,14 @@ const vehiclesData = [
         brand: 'Ford',
         year: 2022,
         fuelType: 'Gas',
-        description: 'A rugged and reliable pickup truck with excellent towing capacity and off-road capabilities.'
+        description: 'A rugged and reliable pickup truck with excellent towing capacity and off-road capabilities.',
+        agent: {
+            name: 'Michael Brown',
+            location: 'Austin, TX',
+            phone: '+1-555-0105',
+            email: 'michael.b@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/men/13.jpg'
+        }
     },
     {
         id: 206,
@@ -317,7 +450,14 @@ const vehiclesData = [
         brand: 'Triumph',
         year: 1978,
         fuelType: 'Gas',
-        description: 'A beautifully restored classic motorcycle, a true collector\'s item with timeless appeal.'
+        description: 'A beautifully restored classic motorcycle, a true collector\'s item with timeless appeal.',
+        agent: {
+            name: 'Jane Doe',
+            location: 'Portland, OR',
+            phone: '+1-555-0101',
+            email: 'jane.doe@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/women/10.jpg'
+        }
     },
     // Additional vehicles (continuing ids)
     {
@@ -331,6 +471,13 @@ const vehiclesData = [
         year: 2022,
         fuelType: 'Gas',
         description: 'A sporty coupe with a sleek design and a turbocharged engine for thrilling performance.',
+        agent: {
+            name: 'John Smith',
+            location: 'New York, NY',
+            phone: '+1-555-0102',
+            email: 'john.smith@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/men/11.jpg'
+        },
         reviews: [
             {
                 id: 1,
@@ -352,7 +499,14 @@ const vehiclesData = [
         brand: 'Honda',
         year: 2023,
         fuelType: 'Gas',
-        description: 'A spacious and practical minivan, perfect for families with plenty of room for passengers and cargo.'
+        description: 'A spacious and practical minivan, perfect for families with plenty of room for passengers and cargo.',
+        agent: {
+            name: 'Alex Johnson',
+            location: 'Chicago, IL',
+            phone: '+1-555-0103',
+            email: 'alex.j@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/lego/1.jpg'
+        }
     },
     {
         id: 209,
@@ -364,7 +518,14 @@ const vehiclesData = [
         brand: 'Tesla',
         year: 2023,
         fuelType: 'Electric',
-        description: 'A cutting-edge electric sedan with long range, rapid acceleration, and advanced autopilot features.'
+        description: 'A cutting-edge electric sedan with long range, rapid acceleration, and advanced autopilot features.',
+        agent: {
+            name: 'Emily White',
+            location: 'San Francisco, CA',
+            phone: '+1-555-0104',
+            email: 'emily.white@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/women/12.jpg'
+        }
     },
     {
         id: 210,
@@ -376,7 +537,14 @@ const vehiclesData = [
         brand: 'Jeep',
         year: 2022,
         fuelType: 'Gas',
-        description: 'A rugged off-road Jeep designed to conquer any terrain, with a durable frame and powerful 4x4 system.'
+        description: 'A rugged off-road Jeep designed to conquer any terrain, with a durable frame and powerful 4x4 system.',
+        agent: {
+            name: 'Michael Brown',
+            location: 'Denver, CO',
+            phone: '+1-555-0105',
+            email: 'michael.b@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/men/13.jpg'
+        }
     },
     {
         id: 211,
@@ -388,7 +556,14 @@ const vehiclesData = [
         brand: 'Ford',
         year: 2023,
         fuelType: 'Gas',
-        description: 'A reliable and spacious delivery van, perfect for businesses needing to transport goods efficiently.'
+        description: 'A reliable and spacious delivery van, perfect for businesses needing to transport goods efficiently.',
+        agent: {
+            name: 'Jane Doe',
+            location: 'New York, NY',
+            phone: '+1-555-0101',
+            email: 'jane.doe@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/women/10.jpg'
+        }
     },
     {
         id: 212,
@@ -400,7 +575,14 @@ const vehiclesData = [
         brand: 'Toyota',
         year: 2021,
         fuelType: 'Hybrid',
-        description: 'An economical hybrid hatchback with excellent fuel efficiency and a compact, city-friendly design.'
+        description: 'An economical hybrid hatchback with excellent fuel efficiency and a compact, city-friendly design.',
+        agent: {
+            name: 'John Smith',
+            location: 'Seattle, WA',
+            phone: '+1-555-0102',
+            email: 'john.smith@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/men/11.jpg'
+        }
     },
     {
         id: 213,
@@ -412,7 +594,14 @@ const vehiclesData = [
         brand: 'Mercedes-Benz',
         year: 2023,
         fuelType: 'Gas',
-        description: 'A premium luxury sedan offering unparalleled comfort, advanced technology, and a smooth, powerful ride.'
+        description: 'A premium luxury sedan offering unparalleled comfort, advanced technology, and a smooth, powerful ride.',
+        agent: {
+            name: 'Alex Johnson',
+            location: 'Beverly Hills, CA',
+            phone: '+1-555-0103',
+            email: 'alex.j@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/lego/1.jpg'
+        }
     },
     {
         id: 214,
@@ -424,7 +613,14 @@ const vehiclesData = [
         brand: 'Ducati',
         year: 2022,
         fuelType: 'Gas',
-        description: 'A high-performance sports motorcycle built for speed and agility, with a striking design.'
+        description: 'A high-performance sports motorcycle built for speed and agility, with a striking design.',
+        agent: {
+            name: 'Emily White',
+            location: 'Miami, FL',
+            phone: '+1-555-0104',
+            email: 'emily.white@hybridagent.com',
+            avatar: 'https://randomuser.me/api/portraits/women/12.jpg'
+        }
     }
 ];
 }),
@@ -439,6 +635,12 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/client/app-dir/link.js [app-rsc] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$icons$2f$fi$2f$index$2e$mjs__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/react-icons/fi/index.mjs [app-rsc] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$app$2f$Listings$2f$listings$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/app/Listings/listings.js [app-rsc] (ecmascript)");
+(()=>{
+    const e = new Error("Cannot find module '../leaderboard'");
+    e.code = 'MODULE_NOT_FOUND';
+    throw e;
+})();
+;
 ;
 ;
 ;
@@ -452,18 +654,19 @@ const StarRating = ({ rating })=>/*#__PURE__*/ (0, __TURBOPACK__imported__module
                 className: `mr-1 ${i < rating ? 'text-teal-400 fill-current' : 'text-gray-600'}`
             }, i, false, {
                 fileName: "[project]/app/Listings/[id]/page.jsx",
-                lineNumber: 9,
+                lineNumber: 10,
                 columnNumber: 7
             }, ("TURBOPACK compile-time value", void 0)))
     }, void 0, false, {
         fileName: "[project]/app/Listings/[id]/page.jsx",
-        lineNumber: 7,
+        lineNumber: 8,
         columnNumber: 3
     }, ("TURBOPACK compile-time value", void 0));
 const ItemDetailsPage = ({ params })=>{
     const id = parseInt(params.id, 10);
     const property = __TURBOPACK__imported__module__$5b$project$5d2f$app$2f$Listings$2f$listings$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["propertiesData"].find((p)=>p.id === id);
     const vehicle = __TURBOPACK__imported__module__$5b$project$5d2f$app$2f$Listings$2f$listings$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["vehiclesData"].find((v)=>v.id === id);
+    const agentRankData = item ? leaderboardData.find((agent)=>agent.name === item.agent?.name) : null;
     const item = property || vehicle;
     const isVehicle = !!vehicle;
     if (!item) {
@@ -474,12 +677,12 @@ const ItemDetailsPage = ({ params })=>{
                 children: "Item not found."
             }, void 0, false, {
                 fileName: "[project]/app/Listings/[id]/page.jsx",
-                lineNumber: 26,
+                lineNumber: 28,
                 columnNumber: 9
             }, ("TURBOPACK compile-time value", void 0))
         }, void 0, false, {
             fileName: "[project]/app/Listings/[id]/page.jsx",
-            lineNumber: 25,
+            lineNumber: 27,
             columnNumber: 7
         }, ("TURBOPACK compile-time value", void 0));
     }
@@ -496,12 +699,12 @@ const ItemDetailsPage = ({ params })=>{
                         children: "← Back to Listings"
                     }, void 0, false, {
                         fileName: "[project]/app/Listings/[id]/page.jsx",
-                        lineNumber: 35,
+                        lineNumber: 37,
                         columnNumber: 11
                     }, ("TURBOPACK compile-time value", void 0))
                 }, void 0, false, {
                     fileName: "[project]/app/Listings/[id]/page.jsx",
-                    lineNumber: 34,
+                    lineNumber: 36,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -517,12 +720,12 @@ const ItemDetailsPage = ({ params })=>{
                                     className: "w-full h-96 object-cover"
                                 }, void 0, false, {
                                     fileName: "[project]/app/Listings/[id]/page.jsx",
-                                    lineNumber: 41,
+                                    lineNumber: 43,
                                     columnNumber: 15
                                 }, ("TURBOPACK compile-time value", void 0))
                             }, void 0, false, {
                                 fileName: "[project]/app/Listings/[id]/page.jsx",
-                                lineNumber: 40,
+                                lineNumber: 42,
                                 columnNumber: 13
                             }, ("TURBOPACK compile-time value", void 0)),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -538,7 +741,7 @@ const ItemDetailsPage = ({ params })=>{
                                                         children: item.name
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                        lineNumber: 46,
+                                                        lineNumber: 48,
                                                         columnNumber: 19
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -546,13 +749,13 @@ const ItemDetailsPage = ({ params })=>{
                                                         children: isVehicle ? item.brand + ' • ' + (item.year || '') : item.location
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                        lineNumber: 47,
+                                                        lineNumber: 49,
                                                         columnNumber: 19
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                lineNumber: 45,
+                                                lineNumber: 47,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -561,18 +764,18 @@ const ItemDetailsPage = ({ params })=>{
                                                     children: item.status
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                    lineNumber: 50,
+                                                    lineNumber: 52,
                                                     columnNumber: 19
                                                 }, ("TURBOPACK compile-time value", void 0))
                                             }, void 0, false, {
                                                 fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                lineNumber: 49,
+                                                lineNumber: 51,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/Listings/[id]/page.jsx",
-                                        lineNumber: 44,
+                                        lineNumber: 46,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -580,7 +783,7 @@ const ItemDetailsPage = ({ params })=>{
                                         children: item.description
                                     }, void 0, false, {
                                         fileName: "[project]/app/Listings/[id]/page.jsx",
-                                        lineNumber: 56,
+                                        lineNumber: 58,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -594,7 +797,7 @@ const ItemDetailsPage = ({ params })=>{
                                                         size: 20
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                        lineNumber: 60,
+                                                        lineNumber: 62,
                                                         columnNumber: 19
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -604,7 +807,7 @@ const ItemDetailsPage = ({ params })=>{
                                                                 children: "Price"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                                lineNumber: 62,
+                                                                lineNumber: 64,
                                                                 columnNumber: 21
                                                             }, ("TURBOPACK compile-time value", void 0)),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -612,19 +815,19 @@ const ItemDetailsPage = ({ params })=>{
                                                                 children: item.price
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                                lineNumber: 63,
+                                                                lineNumber: 65,
                                                                 columnNumber: 21
                                                             }, ("TURBOPACK compile-time value", void 0))
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                        lineNumber: 61,
+                                                        lineNumber: 63,
                                                         columnNumber: 19
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                lineNumber: 59,
+                                                lineNumber: 61,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             isVehicle ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["Fragment"], {
@@ -637,7 +840,7 @@ const ItemDetailsPage = ({ params })=>{
                                                                 size: 20
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                                lineNumber: 70,
+                                                                lineNumber: 72,
                                                                 columnNumber: 23
                                                             }, ("TURBOPACK compile-time value", void 0)),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -647,7 +850,7 @@ const ItemDetailsPage = ({ params })=>{
                                                                         children: "Brand"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                                        lineNumber: 72,
+                                                                        lineNumber: 74,
                                                                         columnNumber: 25
                                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -655,19 +858,19 @@ const ItemDetailsPage = ({ params })=>{
                                                                         children: item.brand
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                                        lineNumber: 73,
+                                                                        lineNumber: 75,
                                                                         columnNumber: 25
                                                                     }, ("TURBOPACK compile-time value", void 0))
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                                lineNumber: 71,
+                                                                lineNumber: 73,
                                                                 columnNumber: 23
                                                             }, ("TURBOPACK compile-time value", void 0))
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                        lineNumber: 69,
+                                                        lineNumber: 71,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -678,7 +881,7 @@ const ItemDetailsPage = ({ params })=>{
                                                                 size: 20
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                                lineNumber: 78,
+                                                                lineNumber: 80,
                                                                 columnNumber: 23
                                                             }, ("TURBOPACK compile-time value", void 0)),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -688,7 +891,7 @@ const ItemDetailsPage = ({ params })=>{
                                                                         children: "Fuel Type"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                                        lineNumber: 80,
+                                                                        lineNumber: 82,
                                                                         columnNumber: 25
                                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -696,19 +899,19 @@ const ItemDetailsPage = ({ params })=>{
                                                                         children: item.fuelType
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                                        lineNumber: 81,
+                                                                        lineNumber: 83,
                                                                         columnNumber: 25
                                                                     }, ("TURBOPACK compile-time value", void 0))
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                                lineNumber: 79,
+                                                                lineNumber: 81,
                                                                 columnNumber: 23
                                                             }, ("TURBOPACK compile-time value", void 0))
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                        lineNumber: 77,
+                                                        lineNumber: 79,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -719,7 +922,7 @@ const ItemDetailsPage = ({ params })=>{
                                                                 size: 20
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                                lineNumber: 86,
+                                                                lineNumber: 88,
                                                                 columnNumber: 23
                                                             }, ("TURBOPACK compile-time value", void 0)),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -729,7 +932,7 @@ const ItemDetailsPage = ({ params })=>{
                                                                         children: "Year"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                                        lineNumber: 88,
+                                                                        lineNumber: 90,
                                                                         columnNumber: 25
                                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -737,19 +940,19 @@ const ItemDetailsPage = ({ params })=>{
                                                                         children: item.year
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                                        lineNumber: 89,
+                                                                        lineNumber: 91,
                                                                         columnNumber: 25
                                                                     }, ("TURBOPACK compile-time value", void 0))
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                                lineNumber: 87,
+                                                                lineNumber: 89,
                                                                 columnNumber: 23
                                                             }, ("TURBOPACK compile-time value", void 0))
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                        lineNumber: 85,
+                                                        lineNumber: 87,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -760,7 +963,7 @@ const ItemDetailsPage = ({ params })=>{
                                                                 size: 20
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                                lineNumber: 94,
+                                                                lineNumber: 96,
                                                                 columnNumber: 23
                                                             }, ("TURBOPACK compile-time value", void 0)),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -770,7 +973,7 @@ const ItemDetailsPage = ({ params })=>{
                                                                         children: "Color"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                                        lineNumber: 96,
+                                                                        lineNumber: 98,
                                                                         columnNumber: 25
                                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -778,19 +981,19 @@ const ItemDetailsPage = ({ params })=>{
                                                                         children: item.color
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                                        lineNumber: 97,
+                                                                        lineNumber: 99,
                                                                         columnNumber: 25
                                                                     }, ("TURBOPACK compile-time value", void 0))
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                                lineNumber: 95,
+                                                                lineNumber: 97,
                                                                 columnNumber: 23
                                                             }, ("TURBOPACK compile-time value", void 0))
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                        lineNumber: 93,
+                                                        lineNumber: 95,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 ]
@@ -804,7 +1007,7 @@ const ItemDetailsPage = ({ params })=>{
                                                                 size: 20
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                                lineNumber: 104,
+                                                                lineNumber: 106,
                                                                 columnNumber: 23
                                                             }, ("TURBOPACK compile-time value", void 0)),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -814,7 +1017,7 @@ const ItemDetailsPage = ({ params })=>{
                                                                         children: "Type"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                                        lineNumber: 106,
+                                                                        lineNumber: 108,
                                                                         columnNumber: 25
                                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -822,19 +1025,19 @@ const ItemDetailsPage = ({ params })=>{
                                                                         children: item.type
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                                        lineNumber: 107,
+                                                                        lineNumber: 109,
                                                                         columnNumber: 25
                                                                     }, ("TURBOPACK compile-time value", void 0))
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                                lineNumber: 105,
+                                                                lineNumber: 107,
                                                                 columnNumber: 23
                                                             }, ("TURBOPACK compile-time value", void 0))
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                        lineNumber: 103,
+                                                        lineNumber: 105,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -845,7 +1048,7 @@ const ItemDetailsPage = ({ params })=>{
                                                                 size: 20
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                                lineNumber: 112,
+                                                                lineNumber: 114,
                                                                 columnNumber: 23
                                                             }, ("TURBOPACK compile-time value", void 0)),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -855,7 +1058,7 @@ const ItemDetailsPage = ({ params })=>{
                                                                         children: "Location"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                                        lineNumber: 114,
+                                                                        lineNumber: 116,
                                                                         columnNumber: 25
                                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -863,19 +1066,19 @@ const ItemDetailsPage = ({ params })=>{
                                                                         children: item.location
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                                        lineNumber: 115,
+                                                                        lineNumber: 117,
                                                                         columnNumber: 25
                                                                     }, ("TURBOPACK compile-time value", void 0))
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                                lineNumber: 113,
+                                                                lineNumber: 115,
                                                                 columnNumber: 23
                                                             }, ("TURBOPACK compile-time value", void 0))
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                        lineNumber: 111,
+                                                        lineNumber: 113,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -886,7 +1089,7 @@ const ItemDetailsPage = ({ params })=>{
                                                                 size: 20
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                                lineNumber: 120,
+                                                                lineNumber: 122,
                                                                 columnNumber: 23
                                                             }, ("TURBOPACK compile-time value", void 0)),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -896,7 +1099,7 @@ const ItemDetailsPage = ({ params })=>{
                                                                         children: "Bedrooms"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                                        lineNumber: 122,
+                                                                        lineNumber: 124,
                                                                         columnNumber: 25
                                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -904,19 +1107,19 @@ const ItemDetailsPage = ({ params })=>{
                                                                         children: item.bedrooms
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                                        lineNumber: 123,
+                                                                        lineNumber: 125,
                                                                         columnNumber: 25
                                                                     }, ("TURBOPACK compile-time value", void 0))
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                                lineNumber: 121,
+                                                                lineNumber: 123,
                                                                 columnNumber: 23
                                                             }, ("TURBOPACK compile-time value", void 0))
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                        lineNumber: 119,
+                                                        lineNumber: 121,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -927,7 +1130,7 @@ const ItemDetailsPage = ({ params })=>{
                                                                 size: 20
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                                lineNumber: 128,
+                                                                lineNumber: 130,
                                                                 columnNumber: 23
                                                             }, ("TURBOPACK compile-time value", void 0)),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -937,7 +1140,7 @@ const ItemDetailsPage = ({ params })=>{
                                                                         children: "Land Size"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                                        lineNumber: 130,
+                                                                        lineNumber: 132,
                                                                         columnNumber: 25
                                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -945,19 +1148,19 @@ const ItemDetailsPage = ({ params })=>{
                                                                         children: item.landSize
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                                        lineNumber: 131,
+                                                                        lineNumber: 133,
                                                                         columnNumber: 25
                                                                     }, ("TURBOPACK compile-time value", void 0))
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                                lineNumber: 129,
+                                                                lineNumber: 131,
                                                                 columnNumber: 23
                                                             }, ("TURBOPACK compile-time value", void 0))
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                        lineNumber: 127,
+                                                        lineNumber: 129,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 ]
@@ -965,25 +1168,183 @@ const ItemDetailsPage = ({ params })=>{
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/Listings/[id]/page.jsx",
-                                        lineNumber: 58,
+                                        lineNumber: 60,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0))
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/Listings/[id]/page.jsx",
-                                lineNumber: 43,
+                                lineNumber: 45,
                                 columnNumber: 13
                             }, ("TURBOPACK compile-time value", void 0))
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/Listings/[id]/page.jsx",
-                        lineNumber: 39,
+                        lineNumber: 41,
                         columnNumber: 11
                     }, ("TURBOPACK compile-time value", void 0))
                 }, void 0, false, {
                     fileName: "[project]/app/Listings/[id]/page.jsx",
-                    lineNumber: 38,
+                    lineNumber: 40,
                     columnNumber: 9
+                }, ("TURBOPACK compile-time value", void 0)),
+                item.agent && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                    className: "mt-12",
+                    children: [
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
+                            className: "text-3xl font-bold text-teal-400 mb-6",
+                            children: "Listed By"
+                        }, void 0, false, {
+                            fileName: "[project]/app/Listings/[id]/page.jsx",
+                            lineNumber: 145,
+                            columnNumber: 13
+                        }, ("TURBOPACK compile-time value", void 0)),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "bg-white/10 p-6 rounded-2xl shadow-lg border border-gray-800 flex items-center gap-6",
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("img", {
+                                    src: item.agent.avatar,
+                                    alt: item.agent.name,
+                                    className: "w-24 h-24 rounded-full border-4 border-teal-500"
+                                }, void 0, false, {
+                                    fileName: "[project]/app/Listings/[id]/page.jsx",
+                                    lineNumber: 147,
+                                    columnNumber: 15
+                                }, ("TURBOPACK compile-time value", void 0)),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    children: [
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            className: "flex items-center gap-3",
+                                            children: [
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
+                                                    className: "text-2xl font-bold",
+                                                    children: item.agent.name
+                                                }, void 0, false, {
+                                                    fileName: "[project]/app/Listings/[id]/page.jsx",
+                                                    lineNumber: 150,
+                                                    columnNumber: 19
+                                                }, ("TURBOPACK compile-time value", void 0)),
+                                                agentRankData && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                    className: "flex items-center gap-1 bg-teal-500/20 text-teal-300 px-3 py-1 rounded-full text-sm font-semibold",
+                                                    children: [
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$icons$2f$fi$2f$index$2e$mjs__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["FiAward"], {}, void 0, false, {
+                                                            fileName: "[project]/app/Listings/[id]/page.jsx",
+                                                            lineNumber: 153,
+                                                            columnNumber: 23
+                                                        }, ("TURBOPACK compile-time value", void 0)),
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                            children: [
+                                                                "Rank #",
+                                                                agentRankData.rank
+                                                            ]
+                                                        }, void 0, true, {
+                                                            fileName: "[project]/app/Listings/[id]/page.jsx",
+                                                            lineNumber: 154,
+                                                            columnNumber: 23
+                                                        }, ("TURBOPACK compile-time value", void 0))
+                                                    ]
+                                                }, void 0, true, {
+                                                    fileName: "[project]/app/Listings/[id]/page.jsx",
+                                                    lineNumber: 152,
+                                                    columnNumber: 21
+                                                }, ("TURBOPACK compile-time value", void 0))
+                                            ]
+                                        }, void 0, true, {
+                                            fileName: "[project]/app/Listings/[id]/page.jsx",
+                                            lineNumber: 149,
+                                            columnNumber: 17
+                                        }, ("TURBOPACK compile-time value", void 0)),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            className: "flex items-center gap-2 text-gray-400 mt-1",
+                                            children: [
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$icons$2f$fi$2f$index$2e$mjs__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["FiMapPin"], {}, void 0, false, {
+                                                    fileName: "[project]/app/Listings/[id]/page.jsx",
+                                                    lineNumber: 159,
+                                                    columnNumber: 19
+                                                }, ("TURBOPACK compile-time value", void 0)),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                    children: item.agent.location
+                                                }, void 0, false, {
+                                                    fileName: "[project]/app/Listings/[id]/page.jsx",
+                                                    lineNumber: 160,
+                                                    columnNumber: 19
+                                                }, ("TURBOPACK compile-time value", void 0))
+                                            ]
+                                        }, void 0, true, {
+                                            fileName: "[project]/app/Listings/[id]/page.jsx",
+                                            lineNumber: 158,
+                                            columnNumber: 17
+                                        }, ("TURBOPACK compile-time value", void 0)),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            className: "flex items-center gap-4 mt-4",
+                                            children: [
+                                                item.agent.phone && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("a", {
+                                                    href: `tel:${item.agent.phone}`,
+                                                    className: "flex items-center gap-2 text-teal-400 hover:underline",
+                                                    children: [
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$icons$2f$fi$2f$index$2e$mjs__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["FiPhone"], {}, void 0, false, {
+                                                            fileName: "[project]/app/Listings/[id]/page.jsx",
+                                                            lineNumber: 165,
+                                                            columnNumber: 23
+                                                        }, ("TURBOPACK compile-time value", void 0)),
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                            children: item.agent.phone
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/app/Listings/[id]/page.jsx",
+                                                            lineNumber: 166,
+                                                            columnNumber: 23
+                                                        }, ("TURBOPACK compile-time value", void 0))
+                                                    ]
+                                                }, void 0, true, {
+                                                    fileName: "[project]/app/Listings/[id]/page.jsx",
+                                                    lineNumber: 164,
+                                                    columnNumber: 21
+                                                }, ("TURBOPACK compile-time value", void 0)),
+                                                item.agent.email && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("a", {
+                                                    href: `mailto:${item.agent.email}`,
+                                                    className: "flex items-center gap-2 text-teal-400 hover:underline",
+                                                    children: [
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$icons$2f$fi$2f$index$2e$mjs__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["FiMail"], {}, void 0, false, {
+                                                            fileName: "[project]/app/Listings/[id]/page.jsx",
+                                                            lineNumber: 171,
+                                                            columnNumber: 23
+                                                        }, ("TURBOPACK compile-time value", void 0)),
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                            children: item.agent.email
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/app/Listings/[id]/page.jsx",
+                                                            lineNumber: 172,
+                                                            columnNumber: 23
+                                                        }, ("TURBOPACK compile-time value", void 0))
+                                                    ]
+                                                }, void 0, true, {
+                                                    fileName: "[project]/app/Listings/[id]/page.jsx",
+                                                    lineNumber: 170,
+                                                    columnNumber: 21
+                                                }, ("TURBOPACK compile-time value", void 0))
+                                            ]
+                                        }, void 0, true, {
+                                            fileName: "[project]/app/Listings/[id]/page.jsx",
+                                            lineNumber: 162,
+                                            columnNumber: 17
+                                        }, ("TURBOPACK compile-time value", void 0))
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "[project]/app/Listings/[id]/page.jsx",
+                                    lineNumber: 148,
+                                    columnNumber: 15
+                                }, ("TURBOPACK compile-time value", void 0))
+                            ]
+                        }, void 0, true, {
+                            fileName: "[project]/app/Listings/[id]/page.jsx",
+                            lineNumber: 146,
+                            columnNumber: 13
+                        }, ("TURBOPACK compile-time value", void 0))
+                    ]
+                }, void 0, true, {
+                    fileName: "[project]/app/Listings/[id]/page.jsx",
+                    lineNumber: 144,
+                    columnNumber: 11
                 }, ("TURBOPACK compile-time value", void 0)),
                 item.reviews && item.reviews.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     className: "mt-12",
@@ -993,7 +1354,7 @@ const ItemDetailsPage = ({ params })=>{
                             children: "Reviews"
                         }, void 0, false, {
                             fileName: "[project]/app/Listings/[id]/page.jsx",
-                            lineNumber: 143,
+                            lineNumber: 183,
                             columnNumber: 13
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1013,7 +1374,7 @@ const ItemDetailsPage = ({ params })=>{
                                                             className: "w-12 h-12 rounded-full mr-4 border-2 border-teal-500"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                            lineNumber: 149,
+                                                            lineNumber: 189,
                                                             columnNumber: 23
                                                         }, ("TURBOPACK compile-time value", void 0)),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1023,7 +1384,7 @@ const ItemDetailsPage = ({ params })=>{
                                                                     children: review.author
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                                    lineNumber: 151,
+                                                                    lineNumber: 191,
                                                                     columnNumber: 25
                                                                 }, ("TURBOPACK compile-time value", void 0)),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1031,32 +1392,32 @@ const ItemDetailsPage = ({ params })=>{
                                                                     children: review.date
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                                    lineNumber: 152,
+                                                                    lineNumber: 192,
                                                                     columnNumber: 25
                                                                 }, ("TURBOPACK compile-time value", void 0))
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                            lineNumber: 150,
+                                                            lineNumber: 190,
                                                             columnNumber: 23
                                                         }, ("TURBOPACK compile-time value", void 0))
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                    lineNumber: 148,
+                                                    lineNumber: 188,
                                                     columnNumber: 21
                                                 }, ("TURBOPACK compile-time value", void 0)),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])(StarRating, {
                                                     rating: review.rating
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/Listings/[id]/page.jsx",
-                                                    lineNumber: 155,
+                                                    lineNumber: 195,
                                                     columnNumber: 21
                                                 }, ("TURBOPACK compile-time value", void 0))
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/Listings/[id]/page.jsx",
-                                            lineNumber: 147,
+                                            lineNumber: 187,
                                             columnNumber: 19
                                         }, ("TURBOPACK compile-time value", void 0)),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1064,24 +1425,24 @@ const ItemDetailsPage = ({ params })=>{
                                             children: review.text
                                         }, void 0, false, {
                                             fileName: "[project]/app/Listings/[id]/page.jsx",
-                                            lineNumber: 157,
+                                            lineNumber: 197,
                                             columnNumber: 19
                                         }, ("TURBOPACK compile-time value", void 0))
                                     ]
                                 }, review.id, true, {
                                     fileName: "[project]/app/Listings/[id]/page.jsx",
-                                    lineNumber: 146,
+                                    lineNumber: 186,
                                     columnNumber: 17
                                 }, ("TURBOPACK compile-time value", void 0)))
                         }, void 0, false, {
                             fileName: "[project]/app/Listings/[id]/page.jsx",
-                            lineNumber: 144,
+                            lineNumber: 184,
                             columnNumber: 13
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/Listings/[id]/page.jsx",
-                    lineNumber: 142,
+                    lineNumber: 182,
                     columnNumber: 11
                 }, ("TURBOPACK compile-time value", void 0)),
                 (!item.reviews || item.reviews.length === 0) && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1089,18 +1450,18 @@ const ItemDetailsPage = ({ params })=>{
                     children: "No reviews for this item yet."
                 }, void 0, false, {
                     fileName: "[project]/app/Listings/[id]/page.jsx",
-                    lineNumber: 165,
+                    lineNumber: 205,
                     columnNumber: 13
                 }, ("TURBOPACK compile-time value", void 0))
             ]
         }, void 0, true, {
             fileName: "[project]/app/Listings/[id]/page.jsx",
-            lineNumber: 33,
+            lineNumber: 35,
             columnNumber: 7
         }, ("TURBOPACK compile-time value", void 0))
     }, void 0, false, {
         fileName: "[project]/app/Listings/[id]/page.jsx",
-        lineNumber: 32,
+        lineNumber: 34,
         columnNumber: 5
     }, ("TURBOPACK compile-time value", void 0));
 };

@@ -13,13 +13,12 @@ const page = () => {
             <p className="text-base md:text-lg font-mono leading-relaxed">
               In the traditional property and vehicle markets, selling
               agents are highly vulnerable to commission fraud due to the lack of a secure,
-              standardized payment system. To solve this, we propose a hybrid Web2 and Web3 platform that
+              standardized payment system. To solve this, we propose a hybrid Web2 platform that
               creates a professional, automated solution for fair commission payments. Our user-friendly Web2
-              interface allows agents and owners to create deals, while a core Web3 smart contract serves as
-              a tamper-proof digital escrow. Once a sale is confirmed, the smart contract
+              interface allows agents and owners to create deals, with just your bank account. Once a sale is confirmed, our platform
               automatically releases the pre-funded commission, eliminating the risk of non-payment.
               Initially targeting independent agents in local markets, our platform will scale by leveraging
-              its borderless blockchain technology to expand into other geographic regions and high-value sales sectors,
+              its borderless technology to expand into other geographic regions and high-value sales sectors,
               establishing a new standard for trust and accountability in the real-estate industry.
             </p>
           </div>
