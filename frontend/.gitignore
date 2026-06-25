@@ -1,0 +1,12 @@
+node_modules
+.next
+out
+build
+
+# env files (never commit)
+.env*
+
+# misc
+.DS_Store
+*.pem
+npm-debug.log*

@@ -1,0 +1,18 @@
+# dependencies
+**/node_modules
+
+# builds / artifacts
+**/.next
+**/out
+contracts/cache
+contracts/artifacts
+contracts/typechain-types
+contracts/deployments
+
+# env — never commit (includes .env, .env.local, .env.example)
+**/.env*
+
+# data / logs / os
+backend/data
+*.log
+.DS_Store

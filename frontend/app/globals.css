@@ -1,0 +1,135 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ---------------------------------------------------------------- */
+/* Brand: monochrome graphite/black base + a vivid "x-ray" ORANGE    */
+/* accent for action. The `teal-*` token IS the accent across the    */
+/* app, so remapping it to an orange ramp turns every button, the    */
+/* HybridAgent wordmark, CTAs, links and active states orange — with */
+/* no per-component edits. Structure stays mono (gray/neutral/black). */
+/* ---------------------------------------------------------------- */
+@theme {
+  --color-teal-50:  #fff5ed;
+  --color-teal-100: #ffe7d1;
+  --color-teal-200: #fecba6;
+  --color-teal-300: #fda86a;
+  --color-teal-400: #fb8137;
+  --color-teal-500: #f96316;
+  --color-teal-600: #ea580c;
+  --color-teal-700: #c2410c;
+  --color-teal-800: #9a3412;
+  --color-teal-900: #7c2d12;
+  --color-teal-950: #431407;
+}
+
+/* ---------------------------------------------------------------- */
+/* Animations                                                       */
+/* ---------------------------------------------------------------- */
+@keyframes toast-enter {
+  from { opacity: 0; transform: translateY(-12px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes toast-leave {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to   { opacity: 0; transform: translateY(-12px) scale(0.96); }
+}
+.animate-enter { animation: toast-enter 0.28s cubic-bezier(0.21, 1.02, 0.73, 1) both; }
+.animate-leave { animation: toast-leave 0.22s cubic-bezier(0.06, 0.71, 0.55, 1) both; }
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up { animation: fade-up 0.5s ease-out both; }
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.animate-fade-in { animation: fade-in 0.4s ease-out both; }
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.animate-scale-in { animation: scale-in 0.25s ease-out both; }
+
+@keyframes shimmer {
+  100% { transform: translateX(100%); }
+}
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-10px); }
+}
+.animate-float { animation: float 6s ease-in-out infinite; }
+
+@keyframes pulse-ring {
+  0%   { transform: scale(0.8); opacity: 0.8; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+.animate-pulse-ring { animation: pulse-ring 1.6s cubic-bezier(0.2, 0.6, 0.4, 1) infinite; }
+
+@keyframes gradient-pan {
+  0%, 100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient-pan 6s ease infinite;
+}
+
+@keyframes marquee-up {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-50%); }
+}
+@keyframes marquee-down {
+  from { transform: translateY(-50%); }
+  to   { transform: translateY(0); }
+}
+.animate-marquee-up   { animation: marquee-up 22s linear infinite; }
+.animate-marquee-down { animation: marquee-down 22s linear infinite; }
+
+/* Dotted background pattern (color follows currentColor) */
+.bg-dot-grid {
+  background-image: radial-gradient(currentColor 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-enter, .animate-leave, .animate-fade-up, .animate-fade-in,
+  .animate-scale-in, .animate-float, .animate-pulse-ring, .animate-gradient,
+  .animate-marquee-up, .animate-marquee-down, .shimmer::after {
+    animation: none;
+  }
+}
+
+/* ---------------------------------------------------------------- */
+/* No borders or focus outlines on buttons / links                  */
+/* ---------------------------------------------------------------- */
+button {
+  border: none !important;
+}
+button,
+a {
+  outline: none !important;
+}
+button:focus,
+button:focus-visible,
+a:focus,
+a:focus-visible,
+:focus-visible {
+  outline: none !important;
+}
