@@ -51,15 +51,18 @@ const config = {
     appSecret: process.env.PRIVY_APP_SECRET || "",
   },
 
-  // Transactional email provider (e.g. Resend/SendGrid). Logs to console in dev.
+  // Transactional email via Brevo SMTP. Logs to console when unconfigured.
   email: {
     from: process.env.EMAIL_FROM || "HybridAgent <no-reply@hybridagent.local>",
-    apiKey: process.env.EMAIL_API_KEY || "",
+    smtpHost: process.env.BREVO_SMTP_HOST || "smtp-relay.brevo.com",
+    smtpPort: Number(process.env.BREVO_SMTP_PORT || 587),
+    smtpUser: process.env.BREVO_SMTP_USER || "",
+    smtpPass: process.env.BREVO_SMTP_PASS || "",
   },
 };
 
 config.privy.configured = Boolean(config.privy.appId && config.privy.appSecret);
-config.email.configured = Boolean(config.email.apiKey);
+config.email.configured = Boolean(config.email.smtpUser && config.email.smtpPass);
 
 config.chainConfigured = Boolean(
   config.rpcUrl && config.mandateRegistryAddress && config.hybridEscrowAddress

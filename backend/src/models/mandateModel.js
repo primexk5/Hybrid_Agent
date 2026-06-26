@@ -34,4 +34,12 @@ async function setStatus(id, status) {
   await query("UPDATE mandates SET status = $1 WHERE mandate_id = $2", [status, id]);
 }
 
-module.exports = { list, getById, upsertCreated, setStatus };
+async function getByListingRef(listingRef) {
+  const { rows } = await query(
+    "SELECT * FROM mandates WHERE listing_ref = $1 AND status = 'accepted' ORDER BY mandate_id DESC LIMIT 1",
+    [listingRef]
+  );
+  return rows[0] || null;
+}
+
+module.exports = { list, getById, upsertCreated, setStatus, getByListingRef };

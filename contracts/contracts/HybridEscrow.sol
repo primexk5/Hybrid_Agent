@@ -125,7 +125,7 @@ contract HybridEscrow is Ownable, ReentrancyGuard {
         require(buyer != address(0) && seller != address(0), "bad party");
         require(buyer != seller, "buyer is seller");
         require(price > 0, "bad price");
-        require(msg.sender == seller || msg.sender == agent, "not seller side");
+        require(msg.sender == seller || msg.sender == agent || msg.sender == owner(), "not seller side");
 
         uint16 commissionBps = 0;
         if (agent != address(0)) {

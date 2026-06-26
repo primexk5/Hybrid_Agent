@@ -1,16 +1,23 @@
-const { Resend } = require("resend");
+const nodemailer = require("nodemailer");
 const config = require("../config");
+
+let _transport = null;
+function transport() {
+  if (!_transport) {
+    _transport = nodemailer.createTransport({
+      host: config.email.smtpHost,
+      port: config.email.smtpPort,
+      secure: false, // STARTTLS on 587
+      auth: { user: config.email.smtpUser, pass: config.email.smtpPass },
+    });
+  }
+  return _transport;
+}
 
 async function send({ to, subject, text }) {
   if (config.email.configured) {
-    const resend = new Resend(config.email.apiKey);
-    await resend.emails.send({
-      from: config.email.from,
-      to,
-      subject,
-      text,
-    });
-    return { ok: true, channel: "resend" };
+    await transport().sendMail({ from: config.email.from, to, subject, text });
+    return { ok: true, channel: "brevo" };
   }
   console.log(`\n──────── EMAIL ────────\nTo: ${to}\nSubject: ${subject}\n\n${text}\n───────────────────────\n`);
   return { ok: true, channel: "console" };
@@ -18,7 +25,6 @@ async function send({ to, subject, text }) {
 
 const claimLink = (listingId) => `${config.appBaseUrl}/claim?listingId=${listingId}`;
 
-// Sent when an agent lists an owner's asset.
 function sendListingNotice({ to, ownerName, agentName, title, listingId }) {
   return send({
     to,
@@ -33,7 +39,6 @@ function sendListingNotice({ to, ownerName, agentName, title, listingId }) {
   });
 }
 
-// Sent when the escrow contract releases funds (deal completed).
 function sendClaimReady({ to, title, listingId }) {
   return send({
     to,

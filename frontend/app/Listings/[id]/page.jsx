@@ -1,11 +1,14 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { ethers } from 'ethers';
+import { useWallets } from '@privy-io/react-auth';
 import {
   FiHome, FiTruck, FiDollarSign, FiShield, FiPhone, FiMessageSquare,
   FiShoppingCart, FiX, FiCheck, FiAlertTriangle, FiUser, FiStar,
+  FiClock, FiArrowRight, FiExternalLink,
 } from 'react-icons/fi';
 import { useAuth } from '../../components/Atoms/AuthProvider';
 import { useNotifications } from '../../components/Atoms/NotificationProvider';
@@ -14,7 +17,21 @@ import ChatPanel from '../../components/Molecules/ChatPanel';
 import ReviewModal from '../../components/Molecules/ReviewModal';
 import { StarRating } from '../../components/Atoms/StarRating';
 import { api } from '@/lib/api';
-import { formatUsdc } from '@/lib/format';
+import { formatUsdc, shortAddress } from '@/lib/format';
+import { pickEmbeddedWallet, getChainConfig } from '@/lib/wallet';
+
+// Minimal ABIs for the buyer's on-chain steps.
+const ERC20_ABI = [
+  'function approve(address spender, uint256 amount) returns (bool)',
+  'function allowance(address owner, address spender) view returns (uint256)',
+];
+const ESCROW_ABI = [
+  'function createDeal(address buyer, address seller, address agent, uint256 price, bytes32 listingRef, uint256 mandateId) returns (uint256)',
+  'function fundDeal(uint256 id)',
+  'event DealCreated(uint256 indexed id, address indexed buyer, address indexed seller, address agent, uint256 price, uint16 commissionBps, uint16 platformFeeBps, bytes32 listingRef, uint256 mandateId)',
+];
+
+const EXPLORER = 'https://sepolia.basescan.org/tx/';
 
 const DetailRow = ({ icon: Icon, label, value }) => (
   <div className="flex items-center gap-3 bg-gray-100 dark:bg-white/10 rounded-lg p-3">
@@ -31,24 +48,27 @@ const ItemDetailsPage = () => {
   const router = useRouter();
   const { user, isLoggedIn } = useAuth();
   const notifications = useNotifications();
+  const { wallets } = useWallets();
 
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [chatConv, setChatConv] = useState(null);
   const [opening, setOpening] = useState(false);
-  const [buyOpen, setBuyOpen] = useState(false);
   const [quote, setQuote] = useState(null);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [reviewData, setReviewData] = useState({ summary: null, reviews: [] });
 
+  // Purchase request state
+  const [pr, setPr] = useState(undefined); // undefined = not loaded yet
+  const [prList, setPrList] = useState([]); // agent sees all requests
+  const [buyOpen, setBuyOpen] = useState(false);
+  const [buyStep, setBuyStep] = useState(''); // '', 'requesting', 'escrow', 'approving', 'funding', 'done'
+  const [fundTx, setFundTx] = useState(null);
+
+  const wallet = useMemo(() => pickEmbeddedWallet(wallets), [wallets]);
+
   const load = useCallback(async () => {
-    try {
-      setItem(await api.listing(id));
-    } catch {
-      setItem(false);
-    } finally {
-      setLoading(false);
-    }
+    try { setItem(await api.listing(id)); } catch { setItem(false); } finally { setLoading(false); }
   }, [id]);
 
   useEffect(() => { load(); }, [load]);
@@ -57,69 +77,162 @@ const ItemDetailsPage = () => {
     try { setReviewData(await api.agentReviews(agentId)); } catch { /* ignore */ }
   }, []);
 
+  useEffect(() => { if (item?.created_by) loadReviews(item.created_by); }, [item?.created_by, loadReviews]);
+
+  // Load the purchase request for this listing once we know the user role.
+  const loadPr = useCallback(async () => {
+    if (!isLoggedIn || !item) return;
+    try {
+      const data = await api.getPurchaseRequest(item.id);
+      if (Array.isArray(data)) { setPrList(data); setPr(null); }
+      else { setPr(data); setPrList([]); }
+    } catch { /* not found or unauthenticated */ }
+  }, [isLoggedIn, item]);
+
+  useEffect(() => { loadPr(); }, [loadPr]);
+
+  // Refresh purchase request every 10 s to catch when agent creates the deal.
   useEffect(() => {
-    if (item?.created_by) loadReviews(item.created_by);
-  }, [item?.created_by, loadReviews]);
+    if (!isLoggedIn || !item) return;
+    const t = setInterval(loadPr, 10_000);
+    return () => clearInterval(t);
+  }, [isLoggedIn, item, loadPr]);
 
   const isVehicle = item?.asset_type === 'vehicle';
   const isOwnerOfListing = user && item && item.created_by === user.id;
+  // Price in USDC base units (6 dec) as BigInt
   const priceBase = item ? BigInt(Math.round(Number(item.price_usdc) * 1e6)) : 0n;
 
-  const openChat = async () => {
-    if (!isLoggedIn) {
-      notifications.info('Sign in to chat', 'Log in to message the agent on-platform.');
-      return router.push('/Login');
-    }
-    setOpening(true);
-    try {
-      const conv = await api.openConversation(item.id);
-      setChatConv(conv.id);
-    } catch (err) {
-      notifications.error('Could not open chat', err.message);
-    } finally {
-      setOpening(false);
-    }
-  };
-
+  // Open the quote modal with breakdown
   const openBuy = async () => {
-    if (!isLoggedIn) {
-      notifications.info('Sign in to buy', 'Log in to purchase securely through escrow.');
-      return router.push('/Login');
-    }
+    if (!isLoggedIn) { notifications.info('Sign in to buy', 'Log in to purchase securely through escrow.'); return router.push('/Login'); }
     setBuyOpen(true);
+    try { setQuote(await api.quote(`?price=${priceBase}&commissionBps=${item.commission_bps || 0}&platformFeeBps=100`)); }
+    catch { setQuote(null); }
+  };
+
+  // Step 1: buyer submits a purchase request
+  const submitRequest = async () => {
+    setBuyStep('requesting');
     try {
-      setQuote(await api.quote(`?price=${priceBase}&commissionBps=${item.commission_bps || 0}&platformFeeBps=100`));
-    } catch {
-      setQuote(null);
+      const newPr = await api.requestPurchase(item.id);
+      setPr(newPr);
+      // Open chat so buyer and agent can coordinate
+      try {
+        const conv = await api.openConversation(item.id);
+        setChatConv(conv.id);
+      } catch { /* ignore if chat already open */ }
+      notifications.success('Purchase requested', 'The agent will set up your escrow deal. Fund it once it is ready.');
+      setBuyOpen(false);
+    } catch (err) {
+      notifications.error('Could not request purchase', err.message);
+    } finally {
+      setBuyStep('');
     }
   };
 
-  const confirmBuy = async () => {
-    // On-chain USDC escrow checkout activates once contracts are deployed.
-    // For now we open a secured conversation so the buyer can coordinate.
+  // Step 2 (agent): create the escrow deal on-chain from the agent's Privy wallet
+  const createDealOnChain = async (buyerAddress, buyerId) => {
+    if (!wallet) { notifications.error('Wallet not ready', 'Connect your wallet to create the escrow deal.'); return; }
+    setBuyStep('escrow');
     try {
-      const conv = await api.openConversation(item.id);
-      setBuyOpen(false);
-      setChatConv(conv.id);
-      notifications.success('Purchase started', 'Coordinate with the agent here. Payment settles in USDC via escrow.');
+      const cfg = await getChainConfig();
+      if (!cfg?.contracts?.hybridEscrow) throw new Error('Escrow contract not configured');
+
+      await wallet.switchChain(cfg.chainId);
+      const provider = new ethers.BrowserProvider(await wallet.getEthereumProvider());
+      const signer = await provider.getSigner();
+      const escrow = new ethers.Contract(cfg.contracts.hybridEscrow, ESCROW_ABI, signer);
+
+      const seller = item.owner_address;
+      if (!seller) throw new Error('Owner payout address not set — attach it first.');
+      const agent = item.listing_type === 'owner_direct' ? ethers.ZeroAddress : (item.agent_address || ethers.ZeroAddress);
+      const listingRef = item.listing_ref; // bytes32 hex string
+
+      const tx = await escrow.createDeal(buyerAddress, seller, agent, priceBase, listingRef, 0);
+      notifications.info('Creating escrow…', 'Waiting for transaction to confirm.');
+      const receipt = await tx.wait();
+
+      // Parse DealCreated event to get dealId
+      const iface = escrow.interface;
+      let dealId = null;
+      for (const log of receipt.logs) {
+        try {
+          const parsed = iface.parseLog(log);
+          if (parsed?.name === 'DealCreated') { dealId = Number(parsed.args.id); break; }
+        } catch { /* skip unparseable logs */ }
+      }
+      if (!dealId) throw new Error('Could not read deal ID from transaction');
+
+      // Record dealId in the backend
+      await api.recordDeal(item.id, buyerId, dealId);
+      await loadPr();
+      notifications.success('Escrow deal created', `Deal #${dealId} is live. The buyer can now fund it.`);
     } catch (err) {
-      notifications.error('Could not start purchase', err.message);
+      notifications.error('Escrow creation failed', err?.shortMessage || err.message);
+    } finally {
+      setBuyStep('');
     }
+  };
+
+  // Step 3 (buyer): approve USDC + fund the escrow deal
+  const fundDeal = async (dealId) => {
+    if (!wallet) { notifications.error('Wallet not ready', 'Connect your wallet to fund the escrow.'); return; }
+    setBuyStep('approving');
+    try {
+      const cfg = await getChainConfig();
+      if (!cfg?.contracts?.usdc || !cfg?.contracts?.hybridEscrow) throw new Error('Contracts not configured');
+
+      await wallet.switchChain(cfg.chainId);
+      const provider = new ethers.BrowserProvider(await wallet.getEthereumProvider());
+      const signer = await provider.getSigner();
+
+      const usdc = new ethers.Contract(cfg.contracts.usdc, ERC20_ABI, signer);
+      const escrow = new ethers.Contract(cfg.contracts.hybridEscrow, ESCROW_ABI, signer);
+
+      notifications.info('Approving USDC…', 'Sign the approval transaction in your wallet.');
+      const approveTx = await usdc.approve(cfg.contracts.hybridEscrow, priceBase);
+      await approveTx.wait();
+
+      setBuyStep('funding');
+      notifications.info('Funding escrow…', 'Sign the funding transaction in your wallet.');
+      const fundTx = await escrow.fundDeal(dealId);
+      const receipt = await fundTx.wait();
+
+      setFundTx(receipt.hash);
+      setBuyStep('done');
+      await loadPr();
+      notifications.success('Escrow funded!', 'Your payment is secured in escrow. The agent will proceed with the sale.');
+    } catch (err) {
+      notifications.error('Payment failed', err?.shortMessage || err.message);
+      setBuyStep('');
+    }
+  };
+
+  const openChat = async () => {
+    if (!isLoggedIn) { notifications.info('Sign in to chat', 'Log in to message the agent on-platform.'); return router.push('/Login'); }
+    setOpening(true);
+    try { const conv = await api.openConversation(item.id); setChatConv(conv.id); }
+    catch (err) { notifications.error('Could not open chat', err.message); }
+    finally { setOpening(false); }
   };
 
   if (loading) return <div className="min-h-screen bg-white dark:bg-black pt-24"><PageLoader label="Loading listing" /></div>;
 
-  if (!item) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black text-gray-900 dark:text-white">
-        <div className="text-center">
-          <p className="text-7xl font-bold text-teal-500 mb-4">404</p>
-          <p className="text-2xl font-semibold mb-6">Listing not found</p>
-          <Link href="/Listings" className="bg-teal-700 hover:bg-teal-600 text-white font-bold py-3 px-6 rounded-xl transition-colors">← Back to Listings</Link>
-        </div>
+  if (!item) return (
+    <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black text-gray-900 dark:text-white">
+      <div className="text-center">
+        <p className="text-7xl font-bold text-teal-500 mb-4">404</p>
+        <p className="text-2xl font-semibold mb-6">Listing not found</p>
+        <Link href="/Listings" className="bg-teal-700 hover:bg-teal-600 text-white font-bold py-3 px-6 rounded-xl transition-colors">← Back to Listings</Link>
       </div>
-    );
-  }
+    </div>
+  );
+
+  // Buyer purchase state
+  const hasPr = pr && pr.status;
+  const dealReady = hasPr && pr.status === 'deal_created' && pr.deal_id;
+  const alreadyFunded = hasPr && pr.status === 'funded';
 
   return (
     <div className="min-h-screen bg-white dark:bg-black text-gray-900 dark:text-white transition-colors duration-300 pt-24 pb-16 px-4 sm:px-6 lg:px-8">
@@ -146,7 +259,6 @@ const ItemDetailsPage = () => {
                 </span>
               </div>
 
-              {/* Fixed price tag */}
               <div className="flex items-baseline gap-2 mb-5">
                 <span className="text-3xl font-extrabold text-teal-600 dark:text-teal-400">{Number(item.price_usdc).toLocaleString()}</span>
                 <span className="text-lg font-semibold text-gray-400">USDC</span>
@@ -162,17 +274,55 @@ const ItemDetailsPage = () => {
                 <DetailRow icon={FiShield} label="Settlement" value="USDC escrow" />
               </div>
 
-              {/* Actions: Buy + Chat (no negotiation, no email) */}
               <div className="mt-auto space-y-3">
                 {isOwnerOfListing ? (
-                  <div className="bg-teal-50 dark:bg-teal-900/15 border border-teal-100 dark:border-teal-900/40 rounded-xl p-4 text-sm text-gray-600 dark:text-gray-300">
-                    This is your listing.{' '}
-                    {item.listing_type === 'agent_brokered' && item.owner_status === 'pending' && (
-                      <AttachOwner id={item.id} onDone={load} notifications={notifications} />
-                    )}
-                  </div>
+                  <AgentActions
+                    item={item}
+                    prList={prList}
+                    buyStep={buyStep}
+                    onCreateDeal={createDealOnChain}
+                    onDone={load}
+                    notifications={notifications}
+                  />
                 ) : item.status === 'sold' ? (
                   <div className="text-center bg-gray-100 dark:bg-white/5 rounded-xl py-3 text-sm font-semibold text-gray-500">This item has been sold.</div>
+                ) : alreadyFunded ? (
+                  <div className="bg-teal-50 dark:bg-teal-900/15 border border-teal-200 dark:border-teal-800 rounded-xl p-4 text-sm text-teal-700 dark:text-teal-300 font-semibold flex items-center gap-2">
+                    <FiCheck size={16} /> Escrow funded — your payment is secured.
+                    {fundTx && <a href={`${EXPLORER}${fundTx}`} target="_blank" rel="noreferrer" className="ml-auto text-xs flex items-center gap-1 hover:underline"><FiExternalLink size={12} /> Tx</a>}
+                  </div>
+                ) : dealReady ? (
+                  <div className="space-y-3">
+                    <div className="bg-amber-50 dark:bg-amber-900/15 border border-amber-200 dark:border-amber-800 rounded-xl p-4 text-sm">
+                      <p className="font-semibold text-amber-800 dark:text-amber-300 mb-1">Escrow deal is ready — fund it now</p>
+                      <p className="text-amber-700 dark:text-amber-400 text-xs">Deal #{pr.deal_id} · {Number(item.price_usdc).toLocaleString()} USDC will be held in escrow until you confirm receipt.</p>
+                    </div>
+                    <button
+                      onClick={() => fundDeal(pr.deal_id)}
+                      disabled={!!buyStep}
+                      className="w-full flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-600 text-white font-bold py-3 rounded-xl transition-colors disabled:opacity-60"
+                    >
+                      {buyStep === 'approving' ? <><Spinner size={16} /> Approving USDC…</> :
+                       buyStep === 'funding' ? <><Spinner size={16} /> Funding escrow…</> :
+                       <><FiShield size={16} /> Fund escrow · {Number(item.price_usdc).toLocaleString()} USDC</>}
+                    </button>
+                    <button onClick={openChat} className="w-full flex items-center justify-center gap-2 border border-gray-300 dark:border-gray-600 hover:border-teal-500 font-bold py-3 rounded-xl transition-colors text-sm">
+                      <FiMessageSquare size={16} /> Chat with agent
+                    </button>
+                  </div>
+                ) : hasPr && pr.status === 'requested' ? (
+                  <div className="space-y-3">
+                    <div className="bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-xl p-4 text-sm flex items-start gap-3">
+                      <FiClock className="text-teal-500 flex-shrink-0 mt-0.5" size={16} />
+                      <div>
+                        <p className="font-semibold text-gray-800 dark:text-gray-200">Purchase requested</p>
+                        <p className="text-gray-500 dark:text-gray-400 text-xs mt-0.5">Waiting for the agent to create your escrow deal. You'll see a "Fund escrow" button here when it's ready.</p>
+                      </div>
+                    </div>
+                    <button onClick={openChat} disabled={opening} className="w-full flex items-center justify-center gap-2 border border-gray-300 dark:border-gray-600 hover:border-teal-500 font-bold py-3 rounded-xl transition-colors disabled:opacity-60">
+                      {opening ? <Spinner size={16} /> : <><FiMessageSquare size={16} /> Chat with agent</>}
+                    </button>
+                  </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <button onClick={openBuy} className="flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-600 text-white font-bold py-3 px-6 rounded-xl transition-colors">
@@ -188,7 +338,7 @@ const ItemDetailsPage = () => {
           </div>
         </div>
 
-        {/* Certified agent */}
+        {/* Agent card */}
         {item.agent_name && (
           <div className="mt-10">
             <h2 className="text-xl font-bold mb-4">Listed by</h2>
@@ -235,22 +385,16 @@ const ItemDetailsPage = () => {
         {item.agent_name && (
           <div className="mt-10">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold">
-                Agent reviews{reviewData.summary?.count ? ` (${reviewData.summary.count})` : ''}
-              </h2>
+              <h2 className="text-xl font-bold">Agent reviews{reviewData.summary?.count ? ` (${reviewData.summary.count})` : ''}</h2>
               {!isOwnerOfListing && (
                 <button
-                  onClick={() => {
-                    if (!isLoggedIn) { notifications.info('Sign in to review', 'Log in to review this agent.'); return router.push('/Login'); }
-                    setReviewOpen(true);
-                  }}
+                  onClick={() => { if (!isLoggedIn) { notifications.info('Sign in to review', 'Log in to review this agent.'); return router.push('/Login'); } setReviewOpen(true); }}
                   className="text-sm font-semibold text-teal-600 dark:text-teal-400 hover:underline flex items-center gap-1.5"
                 >
                   <FiStar size={14} /> Write a review
                 </button>
               )}
             </div>
-
             {reviewData.summary?.count > 0 && (
               <div className="flex flex-wrap gap-2 mb-4">
                 <SummaryChip label="Overall" value={reviewData.summary.rating} />
@@ -258,11 +402,8 @@ const ItemDetailsPage = () => {
                 <SummaryChip label="Professionalism" value={reviewData.summary.professionalism} />
               </div>
             )}
-
             {reviewData.reviews.length === 0 ? (
-              <p className="text-sm text-gray-400 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 text-center">
-                No reviews yet. Chat with the agent, then be the first to review.
-              </p>
+              <p className="text-sm text-gray-400 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 text-center">No reviews yet. Chat with the agent, then be the first to review.</p>
             ) : (
               <div className="grid sm:grid-cols-2 gap-4">
                 {reviewData.reviews.map((r) => (
@@ -284,12 +425,7 @@ const ItemDetailsPage = () => {
       </div>
 
       {reviewOpen && (
-        <ReviewModal
-          agentId={item.created_by}
-          agentName={item.agent_name}
-          onClose={() => setReviewOpen(false)}
-          onDone={(res) => { setReviewData(res); load(); }}
-        />
+        <ReviewModal agentId={item.created_by} agentName={item.agent_name} onClose={() => setReviewOpen(false)} onDone={(res) => { setReviewData(res); load(); }} />
       )}
 
       {/* Buy modal */}
@@ -316,16 +452,61 @@ const ItemDetailsPage = () => {
                 <FiShield className="text-teal-500 flex-shrink-0 mt-0.5" size={14} />
                 Your money is held in escrow and released only when the deal completes — protecting you, the owner, and the agent.
               </div>
-              <button onClick={confirmBuy} className="w-full flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-600 text-white font-bold py-3 rounded-xl transition-colors">
-                <FiCheck size={16} /> Proceed to secure escrow
+              <button
+                onClick={submitRequest}
+                disabled={buyStep === 'requesting'}
+                className="w-full flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-600 text-white font-bold py-3 rounded-xl transition-colors disabled:opacity-60"
+              >
+                {buyStep === 'requesting' ? <><Spinner size={16} /> Sending request…</> : <><FiArrowRight size={16} /> Request purchase</>}
               </button>
-              <p className="text-[11px] text-center text-gray-400">USDC on-chain checkout activates when escrow contracts go live. You'll coordinate with the agent meanwhile.</p>
+              <p className="text-[11px] text-center text-gray-400">The agent will create your escrow deal on-chain. You'll fund it once it's ready.</p>
             </div>
           </div>
         </div>
       )}
 
       {chatConv && <ChatPanel conversationId={chatConv} title={`Chat · ${item.agent_name || 'Agent'}`} onClose={() => setChatConv(null)} />}
+    </div>
+  );
+};
+
+// Agent-side panel: shows pending buyer requests + "Create Escrow" button
+const AgentActions = ({ item, prList, buyStep, onCreateDeal, onDone, notifications }) => {
+  const pending = prList.filter((r) => r.status === 'requested');
+  const active = prList.filter((r) => r.status === 'deal_created');
+
+  return (
+    <div className="space-y-3">
+      <div className="bg-teal-50 dark:bg-teal-900/15 border border-teal-100 dark:border-teal-900/40 rounded-xl p-4 text-sm text-gray-600 dark:text-gray-300">
+        This is your listing.
+        {item.listing_type === 'agent_brokered' && item.owner_status === 'pending' && (
+          <AttachOwner id={item.id} onDone={onDone} notifications={notifications} />
+        )}
+      </div>
+
+      {pending.map((r) => (
+        <div key={r.id} className="bg-amber-50 dark:bg-amber-900/15 border border-amber-200 dark:border-amber-800 rounded-xl p-4 space-y-3">
+          <div className="text-sm">
+            <p className="font-semibold text-amber-800 dark:text-amber-300">Purchase request</p>
+            <p className="text-amber-700 dark:text-amber-400 text-xs mt-0.5 font-mono">{shortAddress(r.buyer_address)}</p>
+          </div>
+          <button
+            onClick={() => onCreateDeal(r.buyer_address, r.buyer_id)}
+            disabled={!!buyStep}
+            className="w-full flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-600 text-white font-bold py-2.5 rounded-xl transition-colors text-sm disabled:opacity-60"
+          >
+            {buyStep === 'escrow' ? <><Spinner size={14} /> Creating deal…</> : <><FiShield size={14} /> Create escrow deal</>}
+          </button>
+          <p className="text-[11px] text-amber-600 dark:text-amber-500">Your wallet will sign a transaction on Base Sepolia.</p>
+        </div>
+      ))}
+
+      {active.map((r) => (
+        <div key={r.id} className="bg-green-50 dark:bg-green-900/15 border border-green-200 dark:border-green-800 rounded-xl p-4 text-sm">
+          <p className="font-semibold text-green-800 dark:text-green-300 flex items-center gap-2"><FiClock size={14} /> Waiting for buyer to fund</p>
+          <p className="text-green-700 dark:text-green-400 text-xs mt-0.5">Deal #{r.deal_id} · {shortAddress(r.buyer_address)}</p>
+        </div>
+      ))}
     </div>
   );
 };
@@ -339,8 +520,7 @@ const Row = ({ label, value, bold }) => (
 
 const SummaryChip = ({ label, value }) => (
   <span className="inline-flex items-center gap-1.5 text-xs font-semibold bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300 px-3 py-1.5 rounded-full">
-    {label}
-    <span className="text-teal-900 dark:text-teal-100">{Number(value || 0).toFixed(1)}/5</span>
+    {label}<span className="text-teal-900 dark:text-teal-100">{Number(value || 0).toFixed(1)}/5</span>
   </span>
 );
 
@@ -355,9 +535,7 @@ const AttachOwner = ({ id, onDone, notifications }) => {
       onDone();
     } catch (err) {
       notifications.error('Could not attach owner', err.message);
-    } finally {
-      setSaving(false);
-    }
+    } finally { setSaving(false); }
   };
   return (
     <div className="mt-3">

@@ -141,6 +141,20 @@ async function init() {
     CREATE INDEX IF NOT EXISTS idx_deals_buyer ON deals (buyer_address);
     CREATE INDEX IF NOT EXISTS idx_deals_agent ON deals (agent_address);
 
+    -- Buyer purchase requests: links a buyer to a listing and tracks on-chain deal progress.
+    CREATE TABLE IF NOT EXISTS purchase_requests (
+      id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      listing_id    UUID REFERENCES listings(id) ON DELETE CASCADE,
+      buyer_id      UUID NOT NULL REFERENCES users(id),
+      buyer_address TEXT NOT NULL,
+      deal_id       BIGINT,
+      status        TEXT NOT NULL DEFAULT 'requested',
+      created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+      UNIQUE (listing_id, buyer_id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_pr_listing ON purchase_requests (listing_id);
+    CREATE INDEX IF NOT EXISTS idx_pr_buyer ON purchase_requests (buyer_id);
+
     -- Migrations for agent-led listings (safe on an already-created table).
     ALTER TABLE listings ADD COLUMN IF NOT EXISTS owner_name TEXT;
     ALTER TABLE listings ADD COLUMN IF NOT EXISTS owner_contact TEXT;

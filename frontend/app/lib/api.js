@@ -66,6 +66,11 @@ export const api = {
   withdraw: (to) => request('/wallet/withdraw', { method: 'POST', body: { to } }),
   createListing: (formData) => request('/listings', { method: 'POST', body: formData, isForm: true }),
   attachOwner: (id, ownerAddress) => request(`/listings/${id}/owner`, { method: 'PATCH', body: { ownerAddress } }),
+  // purchase request lifecycle
+  requestPurchase: (listingId) => request(`/listings/${listingId}/purchase`, { method: 'POST' }),
+  getPurchaseRequest: (listingId) => request(`/listings/${listingId}/purchase`),
+  recordDeal: (listingId, buyerId, dealId) =>
+    request(`/listings/${listingId}/purchase`, { method: 'PATCH', body: { buyerId, dealId } }),
   // chat
   openConversation: (listingId) => request('/chat/conversations', { method: 'POST', body: { listingId } }),
   conversations: () => request('/chat/conversations'),

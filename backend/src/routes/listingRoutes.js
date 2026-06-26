@@ -4,6 +4,7 @@ const validate = require("../middleware/validate");
 const { requireAuth, requireKyc } = require("../middleware/auth");
 const { createListingSchema, attachOwnerSchema } = require("../utils/validators");
 const ctrl = require("../controllers/listingController");
+const purchaseCtrl = require("../controllers/purchaseController");
 
 const router = express.Router();
 
@@ -24,5 +25,10 @@ router.post(
 
 // Attach the off-platform owner's payout address (just-in-time, before settlement).
 router.patch("/:id/owner", requireAuth, validate(attachOwnerSchema), ctrl.attachOwner);
+
+// Purchase request lifecycle (buyer → agent → buyer).
+router.post("/:id/purchase", requireAuth, purchaseCtrl.request);
+router.get("/:id/purchase", requireAuth, purchaseCtrl.get);
+router.patch("/:id/purchase", requireAuth, purchaseCtrl.recordDeal);
 
 module.exports = router;
