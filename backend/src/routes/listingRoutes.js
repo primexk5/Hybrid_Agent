@@ -11,6 +11,7 @@ const router = express.Router();
 router.get("/", ctrl.list);
 router.get("/mine", requireAuth, ctrl.mine);
 router.get("/purchase-requests", requireAuth, purchaseCtrl.getMine);
+router.get("/purchase-requests/incoming", requireAuth, purchaseCtrl.getIncoming);
 router.get("/:id", ctrl.getOne);
 
 // Creating a listing is a transacting action -> auth + KYC required.

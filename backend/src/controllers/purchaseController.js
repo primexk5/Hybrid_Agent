@@ -12,6 +12,17 @@ const request = asyncHandler(async (req, res) => {
   if (!req.user.wallet_address) throw ApiError.badRequest("wallet not set up");
 
   const pr = await purchaseModel.create(listing.id, req.user.id, req.user.wallet_address);
+
+  // Notify the listing agent in real-time so they see it in the dashboard.
+  const io = req.app.get("io");
+  if (io) {
+    io.to(`user:${listing.created_by}`).emit("purchase:request", {
+      listingId: listing.id,
+      listingTitle: listing.title,
+      buyerName: req.user.full_name,
+    });
+  }
+
   res.json(pr);
 });
 
@@ -21,18 +32,15 @@ const get = asyncHandler(async (req, res) => {
   if (!listing) throw ApiError.notFound("listing not found");
 
   if (listing.created_by === req.user.id) {
-    // Agent / listing owner sees all pending requests
     const rows = await purchaseModel.getByListing(listing.id);
     return res.json(rows);
   }
 
-  // Buyer sees only their own
   const pr = await purchaseModel.getByListingAndBuyer(listing.id, req.user.id);
   res.json(pr || null);
 });
 
 // PATCH /listings/:id/purchase  (agent auth required)
-// Body: { buyerId, dealId }
 const recordDeal = asyncHandler(async (req, res) => {
   const listing = await listingModel.getById(req.params.id);
   if (!listing) throw ApiError.notFound("listing not found");
@@ -46,10 +54,16 @@ const recordDeal = asyncHandler(async (req, res) => {
   res.json(pr);
 });
 
-// GET /listings/purchase-requests  (buyer auth required — returns caller's active requests)
+// GET /listings/purchase-requests  (buyer — caller's own active requests)
 const getMine = asyncHandler(async (req, res) => {
   const rows = await purchaseModel.getByBuyer(req.user.id);
   res.json(rows);
 });
 
-module.exports = { request, get, recordDeal, getMine };
+// GET /listings/purchase-requests/incoming  (agent — all requests across the agent's listings)
+const getIncoming = asyncHandler(async (req, res) => {
+  const rows = await purchaseModel.getIncomingForAgent(req.user.id);
+  res.json(rows);
+});
+
+module.exports = { request, get, recordDeal, getMine, getIncoming };

@@ -20,7 +20,8 @@ async function main() {
   console.log("[db] schema ready");
 
   const server = http.createServer(app);
-  initSocket(server);
+  const io = initSocket(server);
+  app.set('io', io);
   console.log("[socket] chat gateway ready");
 
   server.listen(config.port, () => {

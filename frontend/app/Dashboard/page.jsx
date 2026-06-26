@@ -1,11 +1,14 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { ethers } from 'ethers';
+import { useWallets, usePrivy } from '@privy-io/react-auth';
 import {
   FiPlusCircle, FiGrid, FiMessageSquare, FiHome, FiTruck, FiUpload, FiShield,
-  FiDollarSign, FiUser, FiMail, FiCheck, FiArrowLeft,
+  FiDollarSign, FiUser, FiMail, FiCheck, FiArrowLeft, FiInbox, FiClock,
+  FiAlertCircle, FiExternalLink,
 } from 'react-icons/fi';
 import { useAuth } from '../components/Atoms/AuthProvider';
 import { useNotifications } from '../components/Atoms/NotificationProvider';
@@ -13,7 +16,13 @@ import { Spinner, Skeleton } from '../components/Atoms/Loaders';
 import ChatThread from '../components/Molecules/ChatThread';
 import { api } from '@/lib/api';
 import { getSocket } from '@/lib/socket';
-import { timeAgo } from '@/lib/format';
+import { timeAgo, shortAddress } from '@/lib/format';
+import { pickEmbeddedWallet, getChainConfig } from '@/lib/wallet';
+
+const ESCROW_ABI = [
+  'function createDeal(address buyer, address seller, address agent, uint256 price, bytes32 listingRef, uint256 mandateId) returns (uint256)',
+  'event DealCreated(uint256 indexed id, address indexed buyer, address indexed seller, address agent, uint256 price, uint16 commissionBps, uint16 platformFeeBps, bytes32 listingRef, uint256 mandateId)',
+];
 
 const EMPTY = {
   assetType: 'property', listingType: 'agent_brokered', title: '', description: '',
@@ -24,6 +33,10 @@ const DashboardPage = () => {
   const router = useRouter();
   const { user, loading } = useAuth();
   const notifications = useNotifications();
+  const { wallets } = useWallets();
+  const { login: connectPrivy } = usePrivy();
+
+  const wallet = useMemo(() => pickEmbeddedWallet(wallets), [wallets]);
 
   const [tab, setTab] = useState('create');
   const [form, setForm] = useState(EMPTY);
@@ -31,8 +44,10 @@ const DashboardPage = () => {
   const [submitting, setSubmitting] = useState(false);
   const [listings, setListings] = useState([]);
   const [conversations, setConversations] = useState([]);
+  const [incoming, setIncoming] = useState([]);
   const [loadingLists, setLoadingLists] = useState(true);
   const [selectedConv, setSelectedConv] = useState(null);
+  const [dealStep, setDealStep] = useState(''); // per-request step tracker: '<requestId>:escrow'
 
   const verified = user?.kyc_status === 'verified';
   const brokered = form.listingType === 'agent_brokered';
@@ -44,9 +59,14 @@ const DashboardPage = () => {
   const loadAll = useCallback(async () => {
     setLoadingLists(true);
     try {
-      const [mine, convos] = await Promise.all([api.myListings(), api.conversations()]);
+      const [mine, convos, inc] = await Promise.all([
+        api.myListings(),
+        api.conversations(),
+        api.incomingPurchaseRequests(),
+      ]);
       setListings(mine);
       setConversations(convos);
+      setIncoming(inc);
     } catch {
       /* offline */
     } finally {
@@ -58,14 +78,26 @@ const DashboardPage = () => {
     if (user) loadAll();
   }, [user, loadAll]);
 
-  // Live: refresh the conversation list whenever a new message arrives.
+  // Live: refresh on new chat messages AND new purchase requests.
   useEffect(() => {
     if (!user) return;
     const socket = getSocket();
-    const onNotify = () => loadAll();
-    socket.on('message:notify', onNotify);
-    return () => socket.off('message:notify', onNotify);
-  }, [user, loadAll]);
+    const onMsg = () => loadAll();
+    const onPR = ({ listingTitle, buyerName }) => {
+      notifications.info(
+        'New purchase request',
+        `${buyerName || 'A buyer'} wants to buy "${listingTitle}". Go to Incoming to respond.`,
+      );
+      loadAll();
+      setTab('incoming');
+    };
+    socket.on('message:notify', onMsg);
+    socket.on('purchase:request', onPR);
+    return () => {
+      socket.off('message:notify', onMsg);
+      socket.off('purchase:request', onPR);
+    };
+  }, [user, loadAll, notifications]);
 
   const setField = (e) => setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
 
@@ -91,7 +123,7 @@ const DashboardPage = () => {
       if (imageFile) fd.append('image', imageFile);
 
       const created = await api.createListing(fd);
-      notifications.success('Listing published', `“${created.title}” is now live.`);
+      notifications.success('Listing published', `"${created.title}" is now live.`);
       setForm(EMPTY);
       setImageFile(null);
       setTab('listings');
@@ -103,6 +135,50 @@ const DashboardPage = () => {
     }
   };
 
+  // Create the on-chain escrow deal from the dashboard.
+  const createDeal = async (r) => {
+    if (!wallet) { connectPrivy(); return; }
+    setDealStep(`${r.id}:escrow`);
+    try {
+      const cfg = await getChainConfig();
+      if (!cfg?.contracts?.hybridEscrow) throw new Error('Escrow contract not configured');
+
+      await wallet.switchChain(cfg.chainId);
+      const provider = new ethers.BrowserProvider(await wallet.getEthereumProvider());
+      const signer = await provider.getSigner();
+      const escrow = new ethers.Contract(cfg.contracts.hybridEscrow, ESCROW_ABI, signer);
+
+      const seller = r.owner_address;
+      if (!seller) throw new Error('Owner payout address not set. Open the listing and attach it first.');
+      const agent = r.listing_type === 'owner_direct'
+        ? ethers.ZeroAddress
+        : (r.agent_address || ethers.ZeroAddress);
+      const priceBase = BigInt(Math.round(Number(r.price_usdc) * 1e6));
+
+      notifications.info('Creating escrow…', 'Waiting for transaction to confirm.');
+      const tx = await escrow.createDeal(r.buyer_address, seller, agent, priceBase, r.listing_ref, 0);
+      const receipt = await tx.wait();
+
+      const iface = escrow.interface;
+      let dealId = null;
+      for (const log of receipt.logs) {
+        try {
+          const parsed = iface.parseLog(log);
+          if (parsed?.name === 'DealCreated') { dealId = Number(parsed.args.id); break; }
+        } catch { /* skip */ }
+      }
+      if (dealId === null) throw new Error('Could not read deal ID from transaction');
+
+      await api.recordDeal(r.listing_id, r.buyer_id, dealId);
+      notifications.success('Escrow deal created', `Deal #${dealId} is live. The buyer can now fund it.`);
+      loadAll();
+    } catch (err) {
+      notifications.error('Escrow creation failed', err?.shortMessage || err.message);
+    } finally {
+      setDealStep('');
+    }
+  };
+
   if (loading || !user) {
     return <div className="min-h-screen bg-white dark:bg-black pt-24 flex justify-center"><Spinner size={28} className="text-teal-500 mt-10" /></div>;
   }
@@ -110,10 +186,13 @@ const DashboardPage = () => {
   const inputClass = 'w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-white rounded-xl p-3 text-sm outline-none focus:ring-2 focus:ring-teal-500 transition-all';
   const label = 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1';
 
+  const pendingIncoming = incoming.filter((r) => r.status === 'requested');
+
   const tabs = [
-    { id: 'create', label: 'List an item', icon: FiPlusCircle },
-    { id: 'listings', label: 'My Listings', icon: FiGrid },
-    { id: 'messages', label: 'Messages', icon: FiMessageSquare },
+    { id: 'create',   label: 'List an item',  icon: FiPlusCircle },
+    { id: 'listings', label: 'My Listings',   icon: FiGrid },
+    { id: 'incoming', label: 'Incoming',       icon: FiInbox,       badge: pendingIncoming.length },
+    { id: 'messages', label: 'Messages',       icon: FiMessageSquare, badge: conversations.length },
   ];
 
   return (
@@ -121,7 +200,7 @@ const DashboardPage = () => {
       <div className="max-w-5xl mx-auto animate-fade-up">
         <div className="mb-6">
           <h1 className="text-3xl font-extrabold">Agent Dashboard</h1>
-          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">List properties &amp; vehicles, and talk to buyers.</p>
+          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">List properties &amp; vehicles, respond to purchase requests, and talk to buyers.</p>
         </div>
 
         {!verified && (
@@ -136,21 +215,20 @@ const DashboardPage = () => {
         <div className="flex gap-1 p-1 bg-gray-100 dark:bg-white/5 rounded-xl w-full sm:w-fit mb-6 overflow-x-auto">
           {tabs.map((t) => (
             <button key={t.id} onClick={() => setTab(t.id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition-all ${
+              className={`relative flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition-all ${
                 tab === t.id ? 'bg-white dark:bg-white/15 text-teal-700 dark:text-teal-300 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
               }`}>
               <t.icon size={15} /> {t.label}
-              {t.id === 'messages' && conversations.length > 0 && (
-                <span className="bg-teal-500 text-white text-[10px] rounded-full px-1.5">{conversations.length}</span>
+              {!!t.badge && (
+                <span className="bg-teal-500 text-white text-[10px] rounded-full px-1.5 leading-tight py-0.5">{t.badge}</span>
               )}
             </button>
           ))}
         </div>
 
-        {/* Create */}
+        {/* ── Create ── */}
         {tab === 'create' && (
           <form onSubmit={submit} className="bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 sm:p-8 max-w-2xl animate-fade-in space-y-5">
-            {/* asset + listing type */}
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
                 <label className={label}>Asset type</label>
@@ -238,7 +316,7 @@ const DashboardPage = () => {
           </form>
         )}
 
-        {/* My listings */}
+        {/* ── My Listings ── */}
         {tab === 'listings' && (
           loadingLists ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-56 w-full" />)}</div>
@@ -249,31 +327,129 @@ const DashboardPage = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {listings.map((l) => (
-                <Link key={l.id} href={`/Listings/${l.id}`} className="bg-white dark:bg-white/5 rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800 hover:border-teal-500 transition-all group">
-                  {l.image ? <img src={l.image} alt={l.title} className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-500" /> : <div className="w-full h-40 bg-gradient-to-br from-teal-100 to-gray-100 dark:from-teal-900/30 dark:to-white/5" />}
-                  <div className="p-4">
-                    <h3 className="font-bold text-sm truncate">{l.title}</h3>
-                    <p className="text-teal-600 dark:text-teal-400 text-sm font-semibold mt-1">{l.price_usdc} USDC</p>
-                    <div className="flex items-center justify-between mt-1.5">
-                      <span className="text-xs text-gray-400 capitalize">{l.status}</span>
-                      {l.listing_type === 'agent_brokered' && (
-                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${l.owner_status === 'confirmed' ? 'bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-300' : 'bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300'}`}>
-                          owner {l.owner_status}
-                        </span>
-                      )}
+              {listings.map((l) => {
+                const pendingCount = incoming.filter((r) => r.listing_id === l.id && r.status === 'requested').length;
+                return (
+                  <Link key={l.id} href={`/Listings/${l.id}`} className="bg-white dark:bg-white/5 rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800 hover:border-teal-500 transition-all group">
+                    {l.image ? <img src={l.image} alt={l.title} className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-500" /> : <div className="w-full h-40 bg-gradient-to-br from-teal-100 to-gray-100 dark:from-teal-900/30 dark:to-white/5" />}
+                    <div className="p-4">
+                      <h3 className="font-bold text-sm truncate">{l.title}</h3>
+                      <p className="text-teal-600 dark:text-teal-400 text-sm font-semibold mt-1">{l.price_usdc} USDC</p>
+                      <div className="flex items-center justify-between mt-1.5 flex-wrap gap-1">
+                        <span className="text-xs text-gray-400 capitalize">{l.status}</span>
+                        {pendingCount > 0 && (
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300">
+                            {pendingCount} request{pendingCount > 1 ? 's' : ''}
+                          </span>
+                        )}
+                        {l.listing_type === 'agent_brokered' && !pendingCount && (
+                          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${l.owner_status === 'confirmed' ? 'bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-300' : 'bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300'}`}>
+                            owner {l.owner_status}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </Link>
-              ))}
+                  </Link>
+                );
+              })}
             </div>
           )
         )}
 
-        {/* Messages — live two-pane chat */}
+        {/* ── Incoming Purchase Requests ── */}
+        {tab === 'incoming' && (
+          <div className="animate-fade-in space-y-4">
+            {loadingLists ? (
+              <div className="space-y-3">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-28 w-full" />)}</div>
+            ) : incoming.length === 0 ? (
+              <div className="text-center py-16 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-200 dark:border-gray-800">
+                <FiInbox size={32} className="mx-auto text-gray-300 dark:text-gray-600 mb-3" />
+                <p className="font-semibold">No purchase requests yet</p>
+                <p className="text-sm text-gray-400 mt-1">When a buyer requests your listing, it appears here.</p>
+              </div>
+            ) : (
+              incoming.map((r) => {
+                const isProcessing = dealStep === `${r.id}:escrow`;
+                return (
+                  <div key={r.id} className={`bg-gray-50 dark:bg-white/5 border rounded-2xl p-5 flex flex-col sm:flex-row gap-4 ${
+                    r.status === 'requested' ? 'border-amber-200 dark:border-amber-800/60' :
+                    r.status === 'deal_created' ? 'border-teal-200 dark:border-teal-800/60' :
+                    r.status === 'funded' ? 'border-green-200 dark:border-green-800/60' :
+                    'border-gray-200 dark:border-gray-800'
+                  }`}>
+                    {/* Listing thumbnail */}
+                    {r.listing_image
+                      ? <img src={r.listing_image} alt={r.listing_title} className="w-20 h-20 rounded-xl object-cover flex-shrink-0" />
+                      : <div className="w-20 h-20 rounded-xl bg-teal-100 dark:bg-teal-900/30 flex-shrink-0 flex items-center justify-center text-teal-400"><FiHome size={28} /></div>}
+
+                    {/* Info */}
+                    <div className="flex-1 min-w-0 space-y-2">
+                      <div className="flex items-start justify-between gap-2 flex-wrap">
+                        <div>
+                          <Link href={`/Listings/${r.listing_id}`} className="font-bold text-gray-900 dark:text-white hover:text-teal-600 dark:hover:text-teal-400 transition-colors">
+                            {r.listing_title}
+                          </Link>
+                          <p className="text-sm text-teal-600 dark:text-teal-400 font-semibold">{Number(r.price_usdc).toLocaleString()} USDC</p>
+                        </div>
+                        <StatusBadge status={r.status} dealId={r.deal_id} />
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        {r.buyer_avatar && <img src={r.buyer_avatar} alt={r.buyer_name} className="w-7 h-7 rounded-full border-2 border-teal-500 flex-shrink-0" />}
+                        <div>
+                          <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">{r.buyer_name || 'Unknown buyer'}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 font-mono">{shortAddress(r.buyer_address)}</p>
+                        </div>
+                        <span className="ml-auto text-xs text-gray-400">{timeAgo(new Date(r.updated_at).getTime())}</span>
+                      </div>
+
+                      {/* Action */}
+                      {r.status === 'requested' && (
+                        <div className="pt-1">
+                          {!r.owner_address ? (
+                            <div className="flex items-center gap-2 text-xs text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/15 rounded-lg px-3 py-2">
+                              <FiAlertCircle size={13} className="flex-shrink-0" />
+                              Owner payout address not set.{' '}
+                              <Link href={`/Listings/${r.listing_id}`} className="underline font-semibold">Open listing to attach it.</Link>
+                            </div>
+                          ) : !wallet ? (
+                            <button onClick={connectPrivy} className="flex items-center gap-2 bg-teal-700 hover:bg-teal-600 text-white text-sm font-bold px-4 py-2 rounded-xl transition-colors">
+                              <FiShield size={14} /> Connect wallet to create deal
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => createDeal(r)}
+                              disabled={!!dealStep}
+                              className="flex items-center gap-2 bg-teal-700 hover:bg-teal-600 text-white text-sm font-bold px-4 py-2 rounded-xl transition-colors disabled:opacity-60"
+                            >
+                              {isProcessing ? <><Spinner size={14} /> Creating escrow…</> : <><FiShield size={14} /> Create escrow deal</>}
+                            </button>
+                          )}
+                        </div>
+                      )}
+
+                      {r.status === 'deal_created' && (
+                        <p className="text-xs text-teal-600 dark:text-teal-400 flex items-center gap-1.5">
+                          <FiClock size={12} /> Deal #{r.deal_id} created — waiting for buyer to fund escrow.
+                        </p>
+                      )}
+
+                      {r.status === 'funded' && (
+                        <p className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1.5">
+                          <FiCheck size={12} /> Escrow funded — payment secured. Proceed with the sale.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        )}
+
+        {/* ── Messages ── */}
         {tab === 'messages' && (
           <div className="bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden grid md:grid-cols-[300px_1fr] h-[72vh] animate-fade-in">
-            {/* Conversation list */}
             <div className={`md:border-r border-gray-200 dark:border-gray-800 overflow-y-auto ${selectedConv ? 'hidden md:block' : 'block'}`}>
               {loadingLists ? (
                 <div className="p-4 space-y-3">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-14 w-full" />)}</div>
@@ -301,7 +477,6 @@ const DashboardPage = () => {
               )}
             </div>
 
-            {/* Active thread */}
             <div className={`flex-col min-h-0 ${selectedConv ? 'flex' : 'hidden md:flex'}`}>
               {selectedConv ? (
                 <>
@@ -323,6 +498,16 @@ const DashboardPage = () => {
       </div>
     </div>
   );
+};
+
+const StatusBadge = ({ status, dealId }) => {
+  const map = {
+    requested:    { label: 'Pending',      cls: 'bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300' },
+    deal_created: { label: dealId ? `Deal #${dealId} · Awaiting payment` : 'Deal created', cls: 'bg-teal-100 dark:bg-teal-500/20 text-teal-700 dark:text-teal-300' },
+    funded:       { label: 'Funded ✓',     cls: 'bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-300' },
+  };
+  const { label, cls } = map[status] || { label: status, cls: 'bg-gray-100 text-gray-600' };
+  return <span className={`text-[10px] font-bold px-2 py-1 rounded-full flex-shrink-0 ${cls}`}>{label}</span>;
 };
 
 export default DashboardPage;

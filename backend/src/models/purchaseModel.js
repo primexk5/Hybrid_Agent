@@ -46,6 +46,30 @@ async function markFunded(listingId, buyerAddress) {
   );
 }
 
+async function getIncomingForAgent(agentId) {
+  const { rows } = await query(
+    `SELECT pr.*,
+            l.title         AS listing_title,
+            l.image         AS listing_image,
+            l.price_usdc,
+            l.commission_bps,
+            l.listing_ref,
+            l.listing_type,
+            l.owner_address,
+            l.agent_address,
+            u.full_name     AS buyer_name,
+            u.avatar        AS buyer_avatar
+     FROM purchase_requests pr
+     JOIN listings l ON l.id = pr.listing_id
+     LEFT JOIN users u ON u.id = pr.buyer_id
+     WHERE l.created_by = $1
+       AND pr.status <> 'cancelled'
+     ORDER BY pr.updated_at DESC`,
+    [agentId]
+  );
+  return rows;
+}
+
 async function getByBuyer(buyerId) {
   const { rows } = await query(
     `SELECT pr.*, l.title AS listing_title, l.image AS listing_image, l.price_usdc
@@ -58,4 +82,4 @@ async function getByBuyer(buyerId) {
   return rows;
 }
 
-module.exports = { getByListing, getByListingAndBuyer, create, recordDeal, markFunded, getByBuyer };
+module.exports = { getByListing, getByListingAndBuyer, create, recordDeal, markFunded, getByBuyer, getIncomingForAgent };
