@@ -1,85 +1,127 @@
-const { query } = require("../config/db");
+const db = require("../config/filebaseDB");
+const { v4: uuidv4 } = require("uuid");
+
+const RECORDS = "db/purchase-requests/records/";
+const LISTING_IDX = "db/purchase-requests/by-listing/";
+const BUYER_IDX = "db/purchase-requests/by-buyer/";
+
+function recordKey(listingId, buyerId) {
+  return `${RECORDS}${listingId}/${buyerId}.json`;
+}
+
+async function syncIndexes(pr) {
+  await Promise.all([
+    db.put(`${LISTING_IDX}${pr.listing_id}/${pr.buyer_id}.json`, pr),
+    db.put(`${BUYER_IDX}${pr.buyer_id}/${pr.listing_id}.json`, pr),
+  ]);
+}
 
 async function getByListing(listingId) {
-  const { rows } = await query(
-    "SELECT * FROM purchase_requests WHERE listing_id = $1 ORDER BY created_at DESC",
-    [listingId]
-  );
-  return rows;
+  const keys = await db.listKeys(`${LISTING_IDX}${listingId}/`);
+  const results = await Promise.all(keys.map((k) => db.get(k)));
+  return results.filter(Boolean).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 }
 
 async function getByListingAndBuyer(listingId, buyerId) {
-  const { rows } = await query(
-    "SELECT * FROM purchase_requests WHERE listing_id = $1 AND buyer_id = $2",
-    [listingId, buyerId]
-  );
-  return rows[0] || null;
+  return db.get(recordKey(listingId, buyerId));
 }
 
 async function create(listingId, buyerId, buyerAddress) {
-  const { rows } = await query(
-    `INSERT INTO purchase_requests (listing_id, buyer_id, buyer_address)
-     VALUES ($1, $2, $3)
-     ON CONFLICT (listing_id, buyer_id) DO UPDATE SET status = 'requested'
-     RETURNING *`,
-    [listingId, buyerId, buyerAddress.toLowerCase()]
-  );
-  return rows[0];
+  const key = recordKey(listingId, buyerId);
+  const now = new Date().toISOString();
+  const existing = await db.get(key);
+  const pr = {
+    id: existing?.id || uuidv4(),
+    listing_id: listingId,
+    buyer_id: buyerId,
+    buyer_address: buyerAddress.toLowerCase(),
+    deal_id: existing?.deal_id || null,
+    status: "requested",
+    created_at: existing?.created_at || now,
+    updated_at: now,
+  };
+  await db.put(key, pr);
+  await syncIndexes(pr);
+  return pr;
 }
 
 async function recordDeal(listingId, buyerId, dealId) {
-  const { rows } = await query(
-    `UPDATE purchase_requests
-     SET deal_id = $1, status = 'deal_created'
-     WHERE listing_id = $2 AND buyer_id = $3
-     RETURNING *`,
-    [dealId, listingId, buyerId]
-  );
-  return rows[0] || null;
+  const key = recordKey(listingId, buyerId);
+  const pr = await db.get(key);
+  if (!pr) return null;
+  pr.deal_id = dealId;
+  pr.status = "deal_created";
+  pr.updated_at = new Date().toISOString();
+  await db.put(key, pr);
+  await syncIndexes(pr);
+  return pr;
 }
 
 async function markFunded(listingId, buyerAddress) {
-  await query(
-    `UPDATE purchase_requests SET status = 'funded'
-     WHERE listing_id = $1 AND buyer_address = $2`,
-    [listingId, buyerAddress.toLowerCase()]
-  );
+  const keys = await db.listKeys(`${LISTING_IDX}${listingId}/`);
+  const all = await Promise.all(keys.map((k) => db.get(k)));
+  const match = all.find((pr) => pr && pr.buyer_address === buyerAddress.toLowerCase());
+  if (!match) return;
+  match.status = "funded";
+  match.updated_at = new Date().toISOString();
+  await db.put(recordKey(listingId, match.buyer_id), match);
+  await syncIndexes(match);
 }
 
 async function getIncomingForAgent(agentId) {
-  const { rows } = await query(
-    `SELECT pr.*,
-            l.title         AS listing_title,
-            l.image         AS listing_image,
-            l.price_usdc,
-            l.commission_bps,
-            l.listing_ref,
-            l.listing_type,
-            l.owner_address,
-            l.agent_address,
-            u.full_name     AS buyer_name,
-            u.avatar        AS buyer_avatar
-     FROM purchase_requests pr
-     JOIN listings l ON l.id = pr.listing_id
-     LEFT JOIN users u ON u.id = pr.buyer_id
-     WHERE l.created_by = $1
-       AND pr.status <> 'cancelled'
-     ORDER BY pr.updated_at DESC`,
-    [agentId]
-  );
-  return rows;
+  const userModel = require("./userModel");
+  const listingKeys = await db.listKeys(`db/listings/by-creator/${agentId}/`);
+  const listings = await Promise.all(listingKeys.map((k) => db.get(k)));
+
+  const results = [];
+  for (const listing of listings.filter(Boolean)) {
+    const prKeys = await db.listKeys(`${LISTING_IDX}${listing.id}/`);
+    const prs = await Promise.all(prKeys.map((k) => db.get(k)));
+
+    for (const pr of prs.filter((p) => p && p.status !== "cancelled")) {
+      const buyer = await userModel.findById(pr.buyer_id);
+      results.push({
+        ...pr,
+        listing_title: listing.title,
+        listing_image: listing.image,
+        price_usdc: listing.price_usdc,
+        commission_bps: listing.commission_bps,
+        listing_ref: listing.listing_ref,
+        listing_type: listing.listing_type,
+        owner_address: listing.owner_address,
+        agent_address: listing.agent_address,
+        buyer_name: buyer?.full_name || null,
+        buyer_avatar: buyer?.avatar || null,
+      });
+    }
+  }
+  return results.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
 }
 
 async function getByBuyer(buyerId) {
-  const { rows } = await query(
-    `SELECT pr.*, l.title AS listing_title, l.image AS listing_image, l.price_usdc
-     FROM purchase_requests pr
-     JOIN listings l ON l.id = pr.listing_id
-     WHERE pr.buyer_id = $1 AND pr.status NOT IN ('funded', 'cancelled')
-     ORDER BY pr.updated_at DESC`,
-    [buyerId]
-  );
-  return rows;
+  const keys = await db.listKeys(`${BUYER_IDX}${buyerId}/`);
+  const all = await Promise.all(keys.map((k) => db.get(k)));
+  const filtered = all.filter((pr) => pr && !["funded", "cancelled"].includes(pr.status));
+
+  return Promise.all(
+    filtered.map(async (pr) => {
+      const listing = await db.get(`db/listings/records/${pr.listing_id}.json`);
+      return {
+        ...pr,
+        listing_title: listing?.title || null,
+        listing_image: listing?.image || null,
+        price_usdc: listing?.price_usdc || null,
+      };
+    })
+  ).then((r) => r.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at)));
 }
 
-module.exports = { getByListing, getByListingAndBuyer, create, recordDeal, markFunded, getByBuyer, getIncomingForAgent };
+module.exports = {
+  getByListing,
+  getByListingAndBuyer,
+  create,
+  recordDeal,
+  markFunded,
+  getByBuyer,
+  getIncomingForAgent,
+};

@@ -7,9 +7,6 @@ const config = {
     ? process.env.CORS_ORIGIN.split(",").map((s) => s.trim())
     : "*",
 
-  databaseUrl: process.env.DATABASE_URL || "",
-  pgSsl: String(process.env.PGSSL || "true").toLowerCase() === "true",
-
   jwtSecret: process.env.JWT_SECRET || "dev-insecure-secret-change-me",
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || "7d",
   bcryptRounds: Number(process.env.BCRYPT_ROUNDS || 10),

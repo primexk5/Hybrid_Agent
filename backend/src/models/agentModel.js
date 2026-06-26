@@ -1,41 +1,42 @@
-const { query } = require("../config/db");
+const db = require("../config/filebaseDB");
+const userModel = require("./userModel");
+const reviewModel = require("./reviewModel");
 
-// Public agent fields + aggregate stats, ranked for the leaderboard.
-const SELECT = `
-  SELECT u.id, u.full_name, u.user_name, u.avatar, u.bio, u.kyc_status,
-         COALESCE(AVG(r.rating), 0)::float AS rating,
-         COUNT(DISTINCT r.id)::int         AS review_count,
-         (SELECT COUNT(*) FROM listings l WHERE l.created_by = u.id)::int AS listing_count,
-         (SELECT COUNT(*) FROM deals d
-            WHERE d.agent_address = LOWER(u.wallet_address) AND d.state = 'completed')::int AS sales_count
-  FROM users u
-  LEFT JOIN reviews r ON r.agent_id = u.id
-  WHERE u.user_type = 'agent'
-  GROUP BY u.id
-`;
+async function buildAgentStats(user) {
+  const walletAddr = (user.wallet_address || "").toLowerCase();
+  const [stats, listingCount, salesCount] = await Promise.all([
+    reviewModel.summary(user.id),
+    db.listKeys(`db/listings/by-creator/${user.id}/`).then((keys) => keys.length),
+    db.getAll("db/deals/records/").then(
+      (deals) => deals.filter((d) => d && d.state === "completed" && d.agent_address === walletAddr).length
+    ),
+  ]);
+  return {
+    id: user.id,
+    full_name: user.full_name,
+    user_name: user.user_name,
+    avatar: user.avatar,
+    bio: user.bio,
+    kyc_status: user.kyc_status,
+    rating: stats.rating,
+    review_count: stats.count,
+    listing_count: listingCount,
+    sales_count: salesCount,
+  };
+}
 
 async function leaderboard() {
-  const { rows } = await query(
-    `${SELECT} ORDER BY rating DESC, review_count DESC, sales_count DESC, u.created_at ASC`
+  const agents = await userModel.findAllAgents();
+  const withStats = await Promise.all(agents.map(buildAgentStats));
+  return withStats.sort(
+    (a, b) => b.rating - a.rating || b.review_count - a.review_count || b.sales_count - a.sales_count
   );
-  return rows;
 }
 
 async function getById(id) {
-  const { rows } = await query(
-    `SELECT u.id, u.full_name, u.user_name, u.avatar, u.bio, u.kyc_status,
-            COALESCE(AVG(r.rating), 0)::float AS rating,
-            COUNT(DISTINCT r.id)::int         AS review_count,
-            (SELECT COUNT(*) FROM listings l WHERE l.created_by = u.id)::int AS listing_count,
-            (SELECT COUNT(*) FROM deals d
-               WHERE d.agent_address = LOWER(u.wallet_address) AND d.state = 'completed')::int AS sales_count
-     FROM users u
-     LEFT JOIN reviews r ON r.agent_id = u.id
-     WHERE u.id = $1
-     GROUP BY u.id`,
-    [id]
-  );
-  return rows[0] || null;
+  const user = await userModel.findById(id);
+  if (!user || user.user_type !== "agent") return null;
+  return buildAgentStats(user);
 }
 
 module.exports = { leaderboard, getById };

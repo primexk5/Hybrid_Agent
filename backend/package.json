@@ -16,7 +16,6 @@
     "@aws-sdk/client-s3": "^3.1075.0",
     "@privy-io/server-auth": "^1.32.5",
     "bcryptjs": "^2.4.3",
-    "cloudinary": "^2.5.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "ethers": "^6.17.0",
@@ -27,7 +26,6 @@
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.2.0",
     "nodemailer": "^9.0.1",
-    "pg": "^8.13.1",
     "socket.io": "^4.8.0",
     "uuid": "^11.0.3"
   },

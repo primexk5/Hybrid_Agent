@@ -7,7 +7,7 @@ router.get("/health", (req, res) => {
   res.json({
     ok: true,
     chainConfigured: config.chainConfigured,
-    cloudinaryConfigured: config.cloudinaryConfigured,
+    filebaseConfigured: config.filebaseConfigured,
   });
 });
 

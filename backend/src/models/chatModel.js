@@ -1,78 +1,102 @@
-const { query } = require("../config/db");
+const db = require("../config/filebaseDB");
+const { v4: uuidv4 } = require("uuid");
 
-// Find or create the conversation between `buyerId` and the agent of `listing`.
+const CONV_RECORDS = "db/conversations/records/";
+const CONV_LB_IDX = "db/conversations/listing-buyer/";
+const CONV_USER_IDX = "db/conversations/user-index/";
+const MSG_PREFIX = "db/messages/";
+
 async function getOrCreate(listing, buyerId) {
-  const agentId = listing.created_by;
-  const existing = await query(
-    "SELECT * FROM conversations WHERE listing_id = $1 AND buyer_id = $2",
-    [listing.id, buyerId]
-  );
-  if (existing.rows.length) return existing.rows[0];
+  const idxKey = `${CONV_LB_IDX}${listing.id}/${buyerId}.json`;
+  const existing = await db.get(idxKey);
+  if (existing) {
+    const conv = await db.get(`${CONV_RECORDS}${existing.id}.json`);
+    if (conv) return conv;
+  }
 
-  const { rows } = await query(
-    `INSERT INTO conversations (listing_id, buyer_id, agent_id)
-     VALUES ($1, $2, $3) RETURNING *`,
-    [listing.id, buyerId, agentId]
-  );
-  return rows[0];
+  const id = uuidv4();
+  const now = new Date().toISOString();
+  const conv = {
+    id,
+    listing_id: listing.id,
+    buyer_id: buyerId,
+    agent_id: listing.created_by,
+    created_at: now,
+  };
+
+  await db.put(`${CONV_RECORDS}${id}.json`, conv);
+  await db.put(idxKey, { id });
+  await db.put(`${CONV_USER_IDX}${buyerId}/${id}.json`, {});
+  await db.put(`${CONV_USER_IDX}${listing.created_by}/${id}.json`, {});
+  return conv;
 }
 
 async function getById(id) {
-  const { rows } = await query("SELECT * FROM conversations WHERE id = $1", [id]);
-  return rows[0] || null;
+  return db.get(`${CONV_RECORDS}${id}.json`);
 }
 
-// True if the user is the buyer or the agent on the conversation.
 function isMember(conversation, userId) {
-  return conversation && (conversation.buyer_id === userId || conversation.agent_id === userId);
+  return (
+    conversation &&
+    (String(conversation.buyer_id) === String(userId) ||
+      String(conversation.agent_id) === String(userId))
+  );
 }
 
-// All conversations for a user, with listing title + counterparty + last message.
 async function listForUser(userId) {
-  const { rows } = await query(
-    `SELECT c.*,
-            l.title AS listing_title,
-            l.image AS listing_image,
-            buyer.full_name AS buyer_name,
-            agent.full_name AS agent_name,
-            agent.avatar    AS agent_avatar,
-            (SELECT body FROM messages m WHERE m.conversation_id = c.id ORDER BY m.created_at DESC LIMIT 1) AS last_message,
-            (SELECT created_at FROM messages m WHERE m.conversation_id = c.id ORDER BY m.created_at DESC LIMIT 1) AS last_at
-     FROM conversations c
-     LEFT JOIN listings l ON l.id = c.listing_id
-     LEFT JOIN users buyer ON buyer.id = c.buyer_id
-     LEFT JOIN users agent ON agent.id = c.agent_id
-     WHERE c.buyer_id = $1 OR c.agent_id = $1
-     ORDER BY COALESCE(last_at, c.created_at) DESC`,
-    [userId]
+  const userModel = require("./userModel");
+  const keys = await db.listKeys(`${CONV_USER_IDX}${userId}/`);
+  const convIds = keys.map((k) => k.split("/").pop().replace(".json", ""));
+  const convs = await Promise.all(convIds.map((id) => db.get(`${CONV_RECORDS}${id}.json`)));
+
+  const enriched = await Promise.all(
+    convs.filter(Boolean).map(async (conv) => {
+      const [listing, buyer, agent, msgs] = await Promise.all([
+        db.get(`db/listings/records/${conv.listing_id}.json`),
+        userModel.findById(conv.buyer_id),
+        userModel.findById(conv.agent_id),
+        messages(conv.id, 1),
+      ]);
+      return {
+        ...conv,
+        listing_title: listing?.title || null,
+        listing_image: listing?.image || null,
+        buyer_name: buyer?.full_name || null,
+        agent_name: agent?.full_name || null,
+        agent_avatar: agent?.avatar || null,
+        last_message: msgs[0]?.body || null,
+        last_at: msgs[0]?.created_at || conv.created_at,
+      };
+    })
   );
-  return rows;
+  return enriched.sort((a, b) => new Date(b.last_at) - new Date(a.last_at));
 }
 
 async function messages(conversationId, limit = 100) {
-  const { rows } = await query(
-    `SELECT m.*, u.full_name AS sender_name, u.avatar AS sender_avatar
-     FROM messages m LEFT JOIN users u ON u.id = m.sender_id
-     WHERE m.conversation_id = $1
-     ORDER BY m.created_at ASC
-     LIMIT $2`,
-    [conversationId, limit]
-  );
-  return rows;
+  const keys = await db.listKeys(`${MSG_PREFIX}${conversationId}/`);
+  const msgs = await Promise.all(keys.map((k) => db.get(k)));
+  return msgs
+    .filter(Boolean)
+    .sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
+    .slice(0, limit);
 }
 
 async function addMessage(conversationId, senderId, body) {
-  const { rows } = await query(
-    `INSERT INTO messages (conversation_id, sender_id, body) VALUES ($1, $2, $3) RETURNING *`,
-    [conversationId, senderId, body]
-  );
-  // Re-read with sender info for a consistent shape with messages().
-  const { rows: full } = await query(
-    `SELECT m.*, u.full_name AS sender_name, u.avatar AS sender_avatar
-     FROM messages m LEFT JOIN users u ON u.id = m.sender_id WHERE m.id = $1`,
-    [rows[0].id]
-  );
-  return full[0];
+  const userModel = require("./userModel");
+  const id = uuidv4();
+  const now = new Date().toISOString();
+  const sender = await userModel.findById(senderId);
+  const msg = {
+    id,
+    conversation_id: conversationId,
+    sender_id: senderId,
+    body,
+    created_at: now,
+    sender_name: sender?.full_name || null,
+    sender_avatar: sender?.avatar || null,
+  };
+  await db.put(`${MSG_PREFIX}${conversationId}/${id}.json`, msg);
+  return msg;
 }
 
 module.exports = { getOrCreate, getById, isMember, listForUser, messages, addMessage };
