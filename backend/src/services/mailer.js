@@ -1,17 +1,19 @@
+const { Resend } = require("resend");
 const config = require("../config");
 
-// Send a transactional email. In dev (no provider configured) it logs to the
-// console so the whole flow is observable without keys.
-//
-// Production: integrate a provider, e.g. Resend:
-//   const { Resend } = require('resend');
-//   await new Resend(config.email.apiKey).emails.send({ from: config.email.from, to, subject, text });
 async function send({ to, subject, text }) {
   if (config.email.configured) {
-    // TODO: wire the real email provider here.
+    const resend = new Resend(config.email.apiKey);
+    await resend.emails.send({
+      from: config.email.from,
+      to,
+      subject,
+      text,
+    });
+    return { ok: true, channel: "resend" };
   }
   console.log(`\n──────── EMAIL ────────\nTo: ${to}\nSubject: ${subject}\n\n${text}\n───────────────────────\n`);
-  return { ok: true, channel: config.email.configured ? "provider" : "console" };
+  return { ok: true, channel: "console" };
 }
 
 const claimLink = (listingId) => `${config.appBaseUrl}/claim?listingId=${listingId}`;
