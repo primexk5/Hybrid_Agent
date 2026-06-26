@@ -22,11 +22,11 @@ const config = {
     authMax: Number(process.env.AUTH_RATE_LIMIT_MAX || 20),
   },
 
-  cloudinary: {
-    cloudName: process.env.CLOUDINARY_CLOUD_NAME || "",
-    apiKey: process.env.CLOUDINARY_API_KEY || "",
-    apiSecret: process.env.CLOUDINARY_API_SECRET || "",
-    folder: process.env.CLOUDINARY_FOLDER || "hybrid-agent/listings",
+  filebase: {
+    accessKey: process.env.FILEBASE_ACCESS_KEY || "",
+    secretKey: process.env.FILEBASE_SECRET_KEY || "",
+    bucket: process.env.FILEBASE_BUCKET || "",
+    folder: process.env.FILEBASE_FOLDER || "hybrid-agent",
   },
 
   chainId: Number(process.env.CHAIN_ID || 84532),
@@ -67,8 +67,8 @@ config.email.configured = Boolean(config.email.smtpUser && config.email.smtpPass
 config.chainConfigured = Boolean(
   config.rpcUrl && config.mandateRegistryAddress && config.hybridEscrowAddress
 );
-config.cloudinaryConfigured = Boolean(
-  config.cloudinary.cloudName && config.cloudinary.apiKey && config.cloudinary.apiSecret
+config.filebaseConfigured = Boolean(
+  config.filebase.accessKey && config.filebase.secretKey && config.filebase.bucket
 );
 
 module.exports = config;

@@ -4,7 +4,7 @@ const config = require("../config");
 const password = require("../utils/password");
 const jwtUtil = require("../utils/jwt");
 const walletProvider = require("../services/walletProvider");
-const { uploadBuffer } = require("../config/cloudinary");
+const { uploadBuffer } = require("../config/filebase");
 const userModel = require("../models/userModel");
 
 function issueToken(user) {
@@ -67,8 +67,8 @@ const me = asyncHandler(async (req, res) => {
 // PATCH /auth/avatar  (auth) — upload a profile picture (max 1 MB, enforced by multer).
 const updateAvatar = asyncHandler(async (req, res) => {
   if (!req.file) throw ApiError.badRequest("no image uploaded");
-  if (!config.cloudinaryConfigured) throw ApiError.badRequest("image upload not available: Cloudinary is not configured");
-  const url = await uploadBuffer(req.file.buffer, "hybrid-agent/avatars");
+  if (!config.filebaseConfigured) throw ApiError.badRequest("image upload not available: Filebase is not configured");
+  const url = await uploadBuffer(req.file.buffer, req.file.mimetype, "hybrid-agent/avatars");
   const user = await userModel.updateAvatar(req.user.id, url);
   res.json({ user });
 });

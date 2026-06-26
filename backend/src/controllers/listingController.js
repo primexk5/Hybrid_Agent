@@ -2,7 +2,7 @@ const { ethers } = require("ethers");
 const asyncHandler = require("../utils/asyncHandler");
 const ApiError = require("../utils/ApiError");
 const config = require("../config");
-const { uploadBuffer } = require("../config/cloudinary");
+const { uploadBuffer } = require("../config/filebase");
 const listingModel = require("../models/listingModel");
 const walletProvider = require("../services/walletProvider");
 const mailer = require("../services/mailer");
@@ -65,11 +65,11 @@ const create = asyncHandler(async (req, res) => {
     ownerStatus = "self";
   }
 
-  if (req.file && !config.cloudinaryConfigured) {
-    throw ApiError.badRequest("image upload not available: Cloudinary is not configured");
+  if (req.file && !config.filebaseConfigured) {
+    throw ApiError.badRequest("image upload not available: Filebase is not configured");
   }
   let image = b.image || null;
-  if (req.file) image = await uploadBuffer(req.file.buffer);
+  if (req.file) image = await uploadBuffer(req.file.buffer, req.file.mimetype);
 
   // listing_ref links this off-chain row to the on-chain mandate/deal.
   const listingRef = ethers.id(`hybridagent:listing:${ethers.hexlify(ethers.randomBytes(16))}`);
