@@ -36,9 +36,9 @@ async function list({ assetType, status } = {}) {
 }
 
 async function listByCreator(userId) {
-  const keys = await db.listKeys(`${BY_CREATOR}${userId}/`);
-  const listings = await Promise.all(keys.map((k) => db.get(k)));
-  const sorted = listings.filter(Boolean).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  const all = await db.getAll(RECORDS);
+  const mine = all.filter((l) => l && String(l.created_by) === String(userId));
+  const sorted = mine.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
   return Promise.all(sorted.map(enrich));
 }
 

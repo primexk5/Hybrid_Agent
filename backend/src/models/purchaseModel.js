@@ -17,7 +17,7 @@ async function syncIndexes(pr) {
 }
 
 async function getByListing(listingId) {
-  const keys = await db.listKeys(`${LISTING_IDX}${listingId}/`);
+  const keys = await db.listKeys(`${RECORDS}${listingId}/`);
   const results = await Promise.all(keys.map((k) => db.get(k)));
   return results.filter(Boolean).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 }
@@ -58,7 +58,7 @@ async function recordDeal(listingId, buyerId, dealId) {
 }
 
 async function markFunded(listingId, buyerAddress) {
-  const keys = await db.listKeys(`${LISTING_IDX}${listingId}/`);
+  const keys = await db.listKeys(`${RECORDS}${listingId}/`);
   const all = await Promise.all(keys.map((k) => db.get(k)));
   const match = all.find((pr) => pr && pr.buyer_address === buyerAddress.toLowerCase());
   if (!match) return;
@@ -70,12 +70,16 @@ async function markFunded(listingId, buyerAddress) {
 
 async function getIncomingForAgent(agentId) {
   const userModel = require("./userModel");
-  const listingKeys = await db.listKeys(`db/listings/by-creator/${agentId}/`);
-  const listings = await Promise.all(listingKeys.map((k) => db.get(k)));
+
+  // Scan all listing records directly (avoids depending on the by-creator index).
+  const allListings = await db.getAll("db/listings/records/");
+  const agentListings = allListings.filter((l) => l && String(l.created_by) === String(agentId));
 
   const results = [];
-  for (const listing of listings.filter(Boolean)) {
-    const prKeys = await db.listKeys(`${LISTING_IDX}${listing.id}/`);
+  for (const listing of agentListings) {
+    // Use the RECORDS prefix directly — key = records/{listingId}/{buyerId}.json —
+    // so listing-scoped lookup never depends on a secondary index.
+    const prKeys = await db.listKeys(`${RECORDS}${listing.id}/`);
     const prs = await Promise.all(prKeys.map((k) => db.get(k)));
 
     for (const pr of prs.filter((p) => p && p.status !== "cancelled")) {
