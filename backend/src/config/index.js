@@ -3,7 +3,9 @@ require("dotenv").config();
 const config = {
   env: process.env.NODE_ENV || "development",
   port: Number(process.env.PORT || 4000),
-  corsOrigin: process.env.CORS_ORIGIN || "*",
+  corsOrigin: process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(",").map((s) => s.trim())
+    : "*",
 
   databaseUrl: process.env.DATABASE_URL || "",
   pgSsl: String(process.env.PGSSL || "true").toLowerCase() === "true",
