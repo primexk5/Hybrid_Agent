@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ethers } from 'ethers';
-import { useWallets } from '@privy-io/react-auth';
+import { useWallets, usePrivy } from '@privy-io/react-auth';
 import {
   FiHome, FiTruck, FiDollarSign, FiShield, FiPhone, FiMessageSquare,
   FiShoppingCart, FiX, FiCheck, FiAlertTriangle, FiUser, FiStar,
@@ -49,6 +49,7 @@ const ItemDetailsPage = () => {
   const { user, isLoggedIn } = useAuth();
   const notifications = useNotifications();
   const { wallets } = useWallets();
+  const { login: connectPrivy } = usePrivy();
 
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -99,13 +100,17 @@ const ItemDetailsPage = () => {
   }, [isLoggedIn, item, loadPr]);
 
   const isVehicle = item?.asset_type === 'vehicle';
-  const isOwnerOfListing = user && item && item.created_by === user.id;
+  // Coerce both to Number — the API may return created_by as a string while
+  // user.id is always a number, causing === to silently fail on the frontend
+  // even though the backend (two integers) correctly blocks the purchase.
+  const isOwnerOfListing = user && item && Number(item.created_by) === Number(user.id);
   // Price in USDC base units (6 dec) as BigInt
   const priceBase = item ? BigInt(Math.round(Number(item.price_usdc) * 1e6)) : 0n;
 
   // Open the quote modal with breakdown
   const openBuy = async () => {
     if (!isLoggedIn) { notifications.info('Sign in to buy', 'Log in to purchase securely through escrow.'); return router.push('/Login'); }
+    if (!user?.wallet_address) { notifications.error('Wallet not set up', 'Go to your Profile and complete wallet setup before buying.'); return router.push('/Profile'); }
     setBuyOpen(true);
     try { setQuote(await api.quote(`?price=${priceBase}&commissionBps=${item.commission_bps || 0}&platformFeeBps=100`)); }
     catch { setQuote(null); }
@@ -133,7 +138,7 @@ const ItemDetailsPage = () => {
 
   // Step 2 (agent): create the escrow deal on-chain from the agent's Privy wallet
   const createDealOnChain = async (buyerAddress, buyerId) => {
-    if (!wallet) { notifications.error('Wallet not ready', 'Connect your wallet to create the escrow deal.'); return; }
+    if (!wallet) { connectPrivy(); return; }
     setBuyStep('escrow');
     try {
       const cfg = await getChainConfig();
@@ -177,7 +182,7 @@ const ItemDetailsPage = () => {
 
   // Step 3 (buyer): approve USDC + fund the escrow deal
   const fundDeal = async (dealId) => {
-    if (!wallet) { notifications.error('Wallet not ready', 'Connect your wallet to fund the escrow.'); return; }
+    if (!wallet) { connectPrivy(); return; }
     setBuyStep('approving');
     try {
       const cfg = await getChainConfig();
@@ -280,6 +285,8 @@ const ItemDetailsPage = () => {
                     item={item}
                     prList={prList}
                     buyStep={buyStep}
+                    wallet={wallet}
+                    onConnectWallet={connectPrivy}
                     onCreateDeal={createDealOnChain}
                     onDone={load}
                     notifications={notifications}
@@ -297,15 +304,24 @@ const ItemDetailsPage = () => {
                       <p className="font-semibold text-amber-800 dark:text-amber-300 mb-1">Escrow deal is ready — fund it now</p>
                       <p className="text-amber-700 dark:text-amber-400 text-xs">Deal #{pr.deal_id} · {Number(item.price_usdc).toLocaleString()} USDC will be held in escrow until you confirm receipt.</p>
                     </div>
-                    <button
-                      onClick={() => fundDeal(pr.deal_id)}
-                      disabled={!!buyStep}
-                      className="w-full flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-600 text-white font-bold py-3 rounded-xl transition-colors disabled:opacity-60"
-                    >
-                      {buyStep === 'approving' ? <><Spinner size={16} /> Approving USDC…</> :
-                       buyStep === 'funding' ? <><Spinner size={16} /> Funding escrow…</> :
-                       <><FiShield size={16} /> Fund escrow · {Number(item.price_usdc).toLocaleString()} USDC</>}
-                    </button>
+                    {!wallet ? (
+                      <button
+                        onClick={connectPrivy}
+                        className="w-full flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-600 text-white font-bold py-3 rounded-xl transition-colors"
+                      >
+                        <FiShield size={16} /> Connect wallet to pay
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => fundDeal(pr.deal_id)}
+                        disabled={!!buyStep}
+                        className="w-full flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-600 text-white font-bold py-3 rounded-xl transition-colors disabled:opacity-60"
+                      >
+                        {buyStep === 'approving' ? <><Spinner size={16} /> Approving USDC…</> :
+                         buyStep === 'funding' ? <><Spinner size={16} /> Funding escrow…</> :
+                         <><FiShield size={16} /> Fund escrow · {Number(item.price_usdc).toLocaleString()} USDC</>}
+                      </button>
+                    )}
                     <button onClick={openChat} className="w-full flex items-center justify-center gap-2 border border-gray-300 dark:border-gray-600 hover:border-teal-500 font-bold py-3 rounded-xl transition-colors text-sm">
                       <FiMessageSquare size={16} /> Chat with agent
                     </button>
@@ -471,7 +487,7 @@ const ItemDetailsPage = () => {
 };
 
 // Agent-side panel: shows pending buyer requests + "Create Escrow" button
-const AgentActions = ({ item, prList, buyStep, onCreateDeal, onDone, notifications }) => {
+const AgentActions = ({ item, prList, buyStep, wallet, onConnectWallet, onCreateDeal, onDone, notifications }) => {
   const pending = prList.filter((r) => r.status === 'requested');
   const active = prList.filter((r) => r.status === 'deal_created');
 
@@ -490,13 +506,22 @@ const AgentActions = ({ item, prList, buyStep, onCreateDeal, onDone, notificatio
             <p className="font-semibold text-amber-800 dark:text-amber-300">Purchase request</p>
             <p className="text-amber-700 dark:text-amber-400 text-xs mt-0.5 font-mono">{shortAddress(r.buyer_address)}</p>
           </div>
-          <button
-            onClick={() => onCreateDeal(r.buyer_address, r.buyer_id)}
-            disabled={!!buyStep}
-            className="w-full flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-600 text-white font-bold py-2.5 rounded-xl transition-colors text-sm disabled:opacity-60"
-          >
-            {buyStep === 'escrow' ? <><Spinner size={14} /> Creating deal…</> : <><FiShield size={14} /> Create escrow deal</>}
-          </button>
+          {!wallet ? (
+            <button
+              onClick={onConnectWallet}
+              className="w-full flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-600 text-white font-bold py-2.5 rounded-xl transition-colors text-sm"
+            >
+              <FiShield size={14} /> Connect wallet to create deal
+            </button>
+          ) : (
+            <button
+              onClick={() => onCreateDeal(r.buyer_address, r.buyer_id)}
+              disabled={!!buyStep}
+              className="w-full flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-600 text-white font-bold py-2.5 rounded-xl transition-colors text-sm disabled:opacity-60"
+            >
+              {buyStep === 'escrow' ? <><Spinner size={14} /> Creating deal…</> : <><FiShield size={14} /> Create escrow deal</>}
+            </button>
+          )}
           <p className="text-[11px] text-amber-600 dark:text-amber-500">Your wallet will sign a transaction on Base Sepolia.</p>
         </div>
       ))}
