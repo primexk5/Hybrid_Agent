@@ -46,4 +46,10 @@ const recordDeal = asyncHandler(async (req, res) => {
   res.json(pr);
 });
 
-module.exports = { request, get, recordDeal };
+// GET /listings/purchase-requests  (buyer auth required — returns caller's active requests)
+const getMine = asyncHandler(async (req, res) => {
+  const rows = await purchaseModel.getByBuyer(req.user.id);
+  res.json(rows);
+});
+
+module.exports = { request, get, recordDeal, getMine };

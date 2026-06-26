@@ -71,6 +71,7 @@ export const api = {
   getPurchaseRequest: (listingId) => request(`/listings/${listingId}/purchase`),
   recordDeal: (listingId, buyerId, dealId) =>
     request(`/listings/${listingId}/purchase`, { method: 'PATCH', body: { buyerId, dealId } }),
+  myPurchaseRequests: () => request('/listings/purchase-requests'),
   // chat
   openConversation: (listingId) => request('/chat/conversations', { method: 'POST', body: { listingId } }),
   conversations: () => request('/chat/conversations'),

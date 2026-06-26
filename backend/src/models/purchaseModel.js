@@ -46,4 +46,16 @@ async function markFunded(listingId, buyerAddress) {
   );
 }
 
-module.exports = { getByListing, getByListingAndBuyer, create, recordDeal, markFunded };
+async function getByBuyer(buyerId) {
+  const { rows } = await query(
+    `SELECT pr.*, l.title AS listing_title, l.image AS listing_image, l.price_usdc
+     FROM purchase_requests pr
+     JOIN listings l ON l.id = pr.listing_id
+     WHERE pr.buyer_id = $1 AND pr.status NOT IN ('funded', 'cancelled')
+     ORDER BY pr.updated_at DESC`,
+    [buyerId]
+  );
+  return rows;
+}
+
+module.exports = { getByListing, getByListingAndBuyer, create, recordDeal, markFunded, getByBuyer };
