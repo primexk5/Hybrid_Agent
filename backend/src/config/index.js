@@ -35,6 +35,8 @@ const config = {
 
   startBlock: Number(process.env.START_BLOCK || 0),
   pollIntervalMs: Number(process.env.POLL_INTERVAL_MS || 8000),
+  // Max blocks per eth_getLogs page. Alchemy free tier caps this at 10.
+  indexerMaxRange: Number(process.env.INDEXER_MAX_RANGE || 2000),
 
   // Public URL of the frontend (for claim links in emails).
   appBaseUrl: process.env.APP_BASE_URL || "http://localhost:3000",

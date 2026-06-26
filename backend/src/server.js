@@ -7,7 +7,7 @@ const { initSocket } = require("./socket");
 
 async function main() {
   if (!config.databaseUrl) {
-    console.error("DATABASE_URL is not set. Configure your Railway Postgres connection string.");
+    console.error("DATABASE_URL is not set. Configure your Postgres connection string.");
     process.exit(1);
   }
 

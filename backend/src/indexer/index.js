@@ -6,8 +6,13 @@ const dealModel = require("../models/dealModel");
 const listingModel = require("../models/listingModel");
 const mailer = require("../services/mailer");
 
-const LAST_BLOCK_KEY = "indexer:lastBlock";
-const MAX_RANGE = 2000; // RPCs often cap getLogs ranges; page through.
+// Cursor is keyed by the escrow address so redeploying to new contracts starts a
+// fresh scan from START_BLOCK instead of inheriting a stale (already-advanced)
+// cursor from the previous deployment.
+const LAST_BLOCK_KEY = `indexer:lastBlock:${String(config.hybridEscrowAddress).toLowerCase()}`;
+// RPCs cap getLogs ranges; page through. Alchemy's free tier allows only 10
+// blocks per eth_getLogs, so this is configurable via INDEXER_MAX_RANGE.
+const MAX_RANGE = config.indexerMaxRange;
 const ZERO = "0x0000000000000000000000000000000000000000";
 
 async function markListingForDeal(dealId, status) {

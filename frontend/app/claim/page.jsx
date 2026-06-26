@@ -1,36 +1,66 @@
 'use client';
 
-import React, { Suspense, useState, useEffect } from 'react';
+import React, { Suspense, useState, useEffect, useMemo, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { usePrivy, useWallets } from '@privy-io/react-auth';
 import {
   FiMail, FiShield, FiCheckCircle, FiCopy, FiCheck, FiArrowRight, FiHome,
-  FiTruck, FiLock, FiClock,
+  FiTruck, FiLock, FiClock, FiAlertTriangle, FiExternalLink,
 } from 'react-icons/fi';
 import { PageLoader, Spinner } from '../components/Atoms/Loaders';
 import { useNotifications } from '../components/Atoms/NotificationProvider';
 import { api } from '@/lib/api';
+import { getUsdcBalance, withdrawUsdc, pickEmbeddedWallet } from '@/lib/wallet';
+
+const EXPLORER_TX = 'https://sepolia.etherscan.io/tx/';
 
 function ClaimInner() {
   const params = useSearchParams();
   const listingId = params.get('listingId');
   const notifications = useNotifications();
 
+  const { ready, authenticated, login, logout } = usePrivy();
+  const { wallets } = useWallets();
+
   const [claim, setClaim] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [step, setStep] = useState('login'); // login | sent | signedIn
-  const [email, setEmail] = useState('');
-  const [sending, setSending] = useState(false);
+  const [withdrawTo, setWithdrawTo] = useState('');
   const [withdrawing, setWithdrawing] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [balance, setBalance] = useState(null); // { formatted, raw }
+  const [balLoading, setBalLoading] = useState(false);
+  const [txHash, setTxHash] = useState(null);
 
   useEffect(() => {
     if (!listingId) { setLoading(false); return; }
     api.claim(listingId)
-      .then((c) => { setClaim(c); setEmail(c.ownerEmail || ''); })
+      .then((c) => { setClaim(c); })
       .catch(() => setClaim(false))
       .finally(() => setLoading(false));
   }, [listingId]);
+
+  // The embedded wallet the owner controls after signing in.
+  const wallet = useMemo(
+    () => pickEmbeddedWallet(wallets, claim?.ownerWallet),
+    [wallets, claim]
+  );
+  const mismatch = Boolean(
+    authenticated && wallet && claim?.ownerWallet &&
+    wallet.address.toLowerCase() !== claim.ownerWallet.toLowerCase()
+  );
+  const signedIn = authenticated && wallet && !mismatch;
+
+  const refreshBalance = useCallback(async () => {
+    if (!wallet?.address) return;
+    setBalLoading(true);
+    try {
+      setBalance(await getUsdcBalance(wallet.address));
+    } catch { /* leave previous */ }
+    finally { setBalLoading(false); }
+  }, [wallet]);
+
+  useEffect(() => { if (signedIn) refreshBalance(); }, [signedIn, refreshBalance]);
 
   if (loading) return <div className="min-h-screen bg-gray-50 dark:bg-black pt-24"><PageLoader label="Loading your claim" /></div>;
 
@@ -46,13 +76,6 @@ function ClaimInner() {
     );
   }
 
-  const sendLink = (e) => {
-    e.preventDefault();
-    setSending(true);
-    // Scaffold for Privy email magic-link. Production: privy.login({ loginMethods: ['email'] }).
-    setTimeout(() => { setSending(false); setStep('sent'); }, 800);
-  };
-
   const copyWallet = async () => {
     try {
       await navigator.clipboard.writeText(claim.ownerWallet);
@@ -61,18 +84,27 @@ function ClaimInner() {
     } catch { /* ignore */ }
   };
 
-  const withdraw = (e) => {
+  const withdraw = async (e) => {
     e.preventDefault();
-    if (!claim.settled) return;
+    if (!wallet) return;
     setWithdrawing(true);
-    setTimeout(() => {
+    setTxHash(null);
+    try {
+      const dest = withdrawTo.trim() || wallet.address;
+      const receipt = await withdrawUsdc(wallet, dest); // full balance
+      setTxHash(receipt.hash);
+      notifications.success('Withdrawal sent', 'Your USDC transfer is confirmed on-chain.');
+      await refreshBalance();
+    } catch (err) {
+      notifications.error('Withdrawal failed', err?.shortMessage || err?.message || 'Transaction was rejected.');
+    } finally {
       setWithdrawing(false);
-      notifications.success('Withdrawal queued', 'On-chain USDC withdrawal activates once the escrow contracts are live.');
-    }, 900);
+    }
   };
 
   const Icon = claim.assetType === 'vehicle' ? FiTruck : FiHome;
   const short = `${claim.ownerWallet.slice(0, 8)}…${claim.ownerWallet.slice(-6)}`;
+  const hasFunds = balance && balance.raw > 0n;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black text-gray-900 dark:text-white flex items-center justify-center px-4 py-24 transition-colors">
@@ -103,39 +135,33 @@ function ClaimInner() {
             </div>
           </div>
 
-          {step !== 'signedIn' ? (
-            /* ---- Sign-in (email magic link) ---- */
+          {!signedIn ? (
+            /* ---- Sign in with Privy email ---- */
             <div className="p-6">
               <h1 className="text-xl font-bold mb-1">Claim your funds</h1>
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">
                 Sign in with the email your agent used. We open the secure wallet reserved for you — no seed phrase, no crypto knowledge needed.
               </p>
 
-              {step === 'login' ? (
-                <form onSubmit={sendLink} className="space-y-3">
-                  <div className="relative">
-                    <FiMail className="absolute left-3 top-1/2 -translate-y-1/2 text-teal-500" size={16} />
-                    <input
-                      type="email" value={email} onChange={(e) => setEmail(e.target.value)} required
-                      placeholder="you@email.com"
-                      className="w-full pl-10 border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-white/5 rounded-xl p-3 text-sm outline-none focus:ring-2 focus:ring-teal-500"
-                    />
-                  </div>
-                  <button type="submit" disabled={sending} className="w-full flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-600 text-white font-semibold py-3 rounded-xl disabled:opacity-60 transition-colors">
-                    {sending ? <Spinner size={18} /> : <>Email me a magic link <FiArrowRight size={16} /></>}
-                  </button>
-                </form>
-              ) : (
-                <div className="text-center py-4">
-                  <FiMail size={32} className="mx-auto text-teal-500 mb-3" />
-                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">Magic link sent to <b>{email}</b>.</p>
-                  <p className="text-xs text-gray-400 mb-5">Check your inbox and tap the link to sign in.</p>
-                  {/* Dev scaffold: simulate the magic-link click (replaced by Privy in prod) */}
-                  <button onClick={() => setStep('signedIn')} className="text-sm font-semibold text-teal-600 dark:text-teal-400 hover:underline">
-                    Simulate sign-in (demo) →
-                  </button>
+              {mismatch ? (
+                <div className="mb-4 flex items-start gap-2 text-xs text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded-xl p-3">
+                  <FiAlertTriangle className="mt-0.5 flex-shrink-0" size={14} />
+                  <span>You're signed in with a different wallet than the one reserved for {claim.ownerEmail}. Log out and sign in with that email to access your funds.</span>
                 </div>
-              )}
+              ) : null}
+
+              <button
+                onClick={login}
+                disabled={!ready}
+                className="w-full flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-600 text-white font-semibold py-3 rounded-xl disabled:opacity-60 transition-colors"
+              >
+                {!ready ? <Spinner size={18} /> : <><FiMail size={16} /> Sign in to claim <FiArrowRight size={16} /></>}
+              </button>
+              {mismatch ? (
+                <button onClick={logout} className="w-full mt-2 text-sm font-semibold text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                  Log out
+                </button>
+              ) : null}
 
               <div className="flex items-center gap-2 mt-5 text-[11px] text-gray-400">
                 <FiShield size={12} className="text-teal-500" /> Your wallet is reserved for {claim.ownerEmail}. Only this email can open it.
@@ -144,13 +170,19 @@ function ClaimInner() {
           ) : (
             /* ---- Signed in: wallet + balance + withdraw ---- */
             <div className="p-6">
-              <div className="flex items-center gap-2 text-teal-600 dark:text-teal-400 text-sm font-semibold mb-4">
-                <FiCheckCircle size={16} /> Signed in
+              <div className="flex items-center justify-between mb-4">
+                <span className="flex items-center gap-2 text-teal-600 dark:text-teal-400 text-sm font-semibold">
+                  <FiCheckCircle size={16} /> Signed in
+                </span>
+                <button onClick={logout} className="text-xs font-semibold text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">Log out</button>
               </div>
 
               <div className="bg-gradient-to-br from-teal-600 to-teal-700 text-white rounded-2xl p-5 mb-4">
-                <p className="text-xs text-teal-100 mb-1">{claim.settled ? 'Available to withdraw' : 'Reserved (arrives on completion)'}</p>
-                <p className="text-3xl font-extrabold">{claim.payoutUsdc} <span className="text-lg font-semibold text-teal-100">USDC</span></p>
+                <p className="text-xs text-teal-100 mb-1">Available to withdraw</p>
+                <p className="text-3xl font-extrabold">
+                  {balLoading && !balance ? '…' : (balance ? Number(balance.formatted).toLocaleString() : '0')}
+                  <span className="text-lg font-semibold text-teal-100"> USDC</span>
+                </p>
                 <button onClick={copyWallet} className="mt-3 flex items-center gap-2 text-xs font-mono text-teal-50 hover:text-white">
                   {short} {copied ? <FiCheck size={12} /> : <FiCopy size={12} />}
                 </button>
@@ -159,16 +191,30 @@ function ClaimInner() {
               <form onSubmit={withdraw} className="space-y-3">
                 <div>
                   <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Withdraw to</label>
-                  <input placeholder="0x your external wallet (optional)" className="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-white/5 rounded-xl p-3 text-sm font-mono outline-none focus:ring-2 focus:ring-teal-500" />
+                  <input
+                    value={withdrawTo}
+                    onChange={(e) => setWithdrawTo(e.target.value)}
+                    placeholder="0x external wallet (optional)"
+                    className="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-white/5 rounded-xl p-3 text-sm font-mono outline-none focus:ring-2 focus:ring-teal-500"
+                  />
+                  <p className="text-[11px] text-gray-400 mt-1">Leave blank to keep funds in your reserved wallet.</p>
                 </div>
-                <button type="submit" disabled={!claim.settled || withdrawing} className="w-full flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-600 text-white font-semibold py-3 rounded-xl disabled:opacity-50 transition-colors">
-                  {withdrawing ? <Spinner size={18} /> : <><FiLock size={15} /> {claim.settled ? 'Withdraw funds' : 'Funds not released yet'}</>}
+                <button
+                  type="submit"
+                  disabled={!hasFunds || withdrawing}
+                  className="w-full flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-600 text-white font-semibold py-3 rounded-xl disabled:opacity-50 transition-colors"
+                >
+                  {withdrawing ? <Spinner size={18} /> : <><FiLock size={15} /> {hasFunds ? 'Withdraw funds' : 'No funds to withdraw yet'}</>}
                 </button>
               </form>
 
-              {!claim.settled && (
+              {txHash ? (
+                <a href={`${EXPLORER_TX}${txHash}`} target="_blank" rel="noreferrer" className="mt-3 flex items-center justify-center gap-1 text-xs font-semibold text-teal-600 dark:text-teal-400 hover:underline">
+                  View transaction <FiExternalLink size={12} />
+                </a>
+              ) : !hasFunds ? (
                 <p className="text-[11px] text-gray-400 mt-3 text-center">We'll email you the moment the sale completes and your funds land here.</p>
-              )}
+              ) : null}
             </div>
           )}
         </div>

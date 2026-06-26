@@ -45,8 +45,35 @@ npm run deploy:baseSepolia
 Deployment writes `deployments/<network>.json` and prints the env values the
 backend needs (`USDC_ADDRESS`, `MANDATE_REGISTRY_ADDRESS`, `HYBRID_ESCROW_ADDRESS`).
 
-## Recommended chains
+## Deploy to Base Sepolia (target network)
 
-EVM L2s with native USDC and cheap gas: **Base** (84532 = Sepolia) or
-**Arbitrum** (421614 = Sepolia). On mainnet, set `USDC_ADDRESS` to Circle's
-native USDC for that chain — never deploy `MockUSDC` to production.
+The deploy script **auto-uses Circle's real test USDC** on Base Sepolia
+(`0x036CbD53842c5426634e7929541eC2318f3dCF7e`) — no `MockUSDC` on public chains.
+
+1. Create a fresh deployer wallet. **This wallet becomes the contract owner — the
+   only address that can withdraw platform fees** (`withdrawFees()`).
+2. Fund it:
+   - Base Sepolia ETH (gas) — a Base Sepolia faucet.
+   - Test USDC — https://faucet.circle.com (select Base Sepolia).
+3. `cp .env.example .env` and set `PRIVATE_KEY` (leave `USDC_ADDRESS` blank to
+   auto-resolve). Optionally set `FEE_RECIPIENT` / `ARBITER` / `PLATFORM_FEE_BPS`.
+4. Deploy:
+   ```bash
+   npm run deploy:baseSepolia
+   ```
+5. Paste the printed `CHAIN_ID / USDC_ADDRESS / MANDATE_REGISTRY_ADDRESS /
+   HYBRID_ESCROW_ADDRESS` into `backend/.env` to switch the indexer on.
+6. (Optional) Verify on Basescan — set `BASESCAN_API_KEY` in `.env`, then run the
+   `npx hardhat verify …` command the deploy script prints.
+
+## Networks
+
+| Network | chainId | USDC (auto) |
+|---|---|---|
+| `baseSepolia` (target) | 84532 | Circle test USDC |
+| `base` (production) | 8453 | Circle native USDC |
+| `arbitrumSepolia` | 421614 | Circle test USDC |
+| `localhost` / `hardhat` | — | MockUSDC (auto-deployed) |
+
+Production target is **Base mainnet** (cheap L2 gas, native USDC) — never deploy
+`MockUSDC` there.

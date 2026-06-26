@@ -1,23 +1,38 @@
+'use client';
+
 import React from 'react';
-import toast from 'react-hot-toast';
-import { FiLink } from 'react-icons/fi';
+import { usePrivy } from '@privy-io/react-auth';
+import { FiLink, FiLogOut } from 'react-icons/fi';
 
 const ConnectWallet = () => {
-  const notify = () =>
-    toast('Wallet connection coming soon!', {
-      style: {
-        border: '1px solid #0f766e',
-        padding: '14px',
-        color: '#134e4a',
-        background: '#f0fdf4',
-        fontWeight: '600',
-      },
-      icon: '🚀',
-    });
+  const { ready, authenticated, user, login, logout } = usePrivy();
+
+  if (!ready) {
+    return (
+      <span className="flex items-center gap-2 text-gray-400 font-semibold text-sm">
+        <FiLink size={14} /> Wallet…
+      </span>
+    );
+  }
+
+  if (authenticated) {
+    const addr = user?.wallet?.address;
+    const short = addr ? `${addr.slice(0, 6)}…${addr.slice(-4)}` : 'Connected';
+    return (
+      <button
+        onClick={logout}
+        title="Disconnect wallet"
+        className="flex items-center gap-2 text-teal-600 dark:text-teal-400 hover:text-teal-800 dark:hover:text-teal-200 font-semibold text-sm transition-colors"
+      >
+        <span className="font-mono">{short}</span>
+        <FiLogOut size={14} />
+      </button>
+    );
+  }
 
   return (
     <button
-      onClick={notify}
+      onClick={login}
       className="flex items-center gap-2 text-teal-600 dark:text-teal-400 hover:text-teal-800 dark:hover:text-teal-200 font-semibold text-sm transition-colors"
     >
       <FiLink size={14} />

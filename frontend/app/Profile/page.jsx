@@ -8,10 +8,12 @@ import {
   FiCopy, FiCheck, FiShield, FiAward, FiTwitter, FiLinkedin, FiFacebook,
   FiCreditCard, FiActivity, FiSettings, FiLogOut, FiExternalLink, FiCamera,
 } from 'react-icons/fi';
+import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { useAuth } from '../components/Atoms/AuthProvider';
 import { useNotifications } from '../components/Atoms/NotificationProvider';
 import { Spinner, Skeleton, PageLoader } from '../components/Atoms/Loaders';
 import { api } from '@/lib/api';
+import { withdrawUsdc, pickEmbeddedWallet } from '@/lib/wallet';
 import { shortAddress, formatUsdc, tierInfo, TIERS } from '@/lib/format';
 
 const StatCard = ({ icon: Icon, label, value, loading }) => (
@@ -41,6 +43,8 @@ const StateBadge = ({ state }) => {
 const ProfilePage = () => {
   const router = useRouter();
   const { user, loading, logout, verifyKyc, setUser } = useAuth();
+  const { authenticated, login } = usePrivy();
+  const { wallets } = useWallets();
   const notifications = useNotifications();
 
   const [tab, setTab] = useState('overview');
@@ -144,14 +148,27 @@ const ProfilePage = () => {
 
   const handleWithdraw = async (e) => {
     e.preventDefault();
+    // Signing happens in the user's own Privy wallet — they must be signed in.
+    if (!authenticated) {
+      notifications.info('Sign in to your wallet', 'Connect with the email on your account to authorize the withdrawal.');
+      login();
+      return;
+    }
+    const embedded = pickEmbeddedWallet(wallets, user?.wallet_address);
+    if (!embedded) {
+      notifications.error('Wallet unavailable', 'Could not open your embedded wallet. Try reconnecting.');
+      return;
+    }
     setWithdrawing(true);
     try {
-      const res = await api.withdraw(withdrawTo.trim() || undefined);
-      notifications.success('Withdrawal requested', res.message);
+      const dest = withdrawTo.trim() || embedded.address;
+      const receipt = await withdrawUsdc(embedded, dest); // full USDC balance
+      notifications.success('Withdrawal sent', `USDC transfer confirmed (tx ${receipt.hash.slice(0, 10)}…).`);
       setWithdrawOpen(false);
       setWithdrawTo('');
+      try { setWalletInfo(await api.wallet()); } catch { /* ignore */ }
     } catch (err) {
-      notifications.error('Withdrawal failed', err.message);
+      notifications.error('Withdrawal failed', err?.shortMessage || err?.message || 'Transaction was rejected.');
     } finally {
       setWithdrawing(false);
     }

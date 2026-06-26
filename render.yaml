@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: hybrid-agent-backend
+    env: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: hybrid-agent-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: KEY_ENCRYPTION_SECRET
+        generateValue: true
+      - key: CORS_ORIGIN
+        value: "*" # Update this with the frontend URL once deployed
+      - key: BCRYPT_ROUNDS
+        value: "10"
+      
+databases:
+  - name: hybrid-agent-db
+    databaseName: hybrid_agent
+    user: hybrid_user
+    plan: free

@@ -77,7 +77,7 @@ const Navbar = () => {
         }`}
       >
         <Link href="/" className="z-50 relative flex items-center">
-          <span className={`text-2xl md:text-3xl font-extrabold tracking-tighter cursor-pointer ${
+          <span className={`text-xl md:text-3xl font-extrabold tracking-tighter cursor-pointer ${
             isDark ? 'text-white' : 'text-gray-900'
           }`}>
             <span className='text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-teal-700'>HYBRID</span>
