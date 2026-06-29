@@ -8,21 +8,17 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
-import { MOCK_LISTINGS } from '../data/mockListings';
+import { api, type Listing, type WalletData } from '../lib/api';
+import { storage } from '../lib/storage';
+import { buyListing, ethersId, ZeroAddress } from '../lib/contracts';
 
 const NAVY  = '#0c2340';
 const GOLD  = '#c9912a';
 const GREEN = '#22c55e';
 const RED   = '#ef4444';
 
-// Mock wallet state — replaced by real wallet data after integration
-const WALLET_USDC    = 1250.0;
-const WALLET_ADDRESS = '0x742d35Cc6634C0532925a3b8Bc454e4438f44e';
-
 // Platform fee: 100 bps = 1%
 const PLATFORM_FEE_BPS = 100;
-// Mock agent commission for demo: 500 bps = 5%
-const AGENT_COMMISSION_BPS = 500;
 
 type Step = 'review' | 'wallet' | 'executing' | 'done' | 'error';
 
@@ -40,7 +36,13 @@ export default function EscrowConfirmScreen() {
   const nav    = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route  = useRoute<EscrowRoute>();
 
-  const listing = MOCK_LISTINGS.find(l => l.id === route.params.listingId);
+  const [listing, setListing] = useState<Listing | null>(null);
+  const [wallet,  setWallet]  = useState<WalletData | null>(null);
+
+  useEffect(() => {
+    api.listing(route.params.listingId).then(setListing).catch(() => {});
+    api.wallet().then(setWallet).catch(() => {});
+  }, [route.params.listingId]);
 
   const [step, setStep]         = useState<Step>('review');
   const [phase, setPhase]       = useState<ExecPhase>({ id: 'idle' });
@@ -51,36 +53,71 @@ export default function EscrowConfirmScreen() {
   const progressW  = useRef(new Animated.Value(0)).current;
 
   // ── Derived amounts ──────────────────────────────────────────────────────
-  const rawPrice  = listing ? parseFloat(listing.price_usdc.replace(/,/g, '')) : 0;
-  const agentFee  = parseFloat(((rawPrice * AGENT_COMMISSION_BPS) / 10000).toFixed(2));
-  const platFee   = parseFloat(((rawPrice * PLATFORM_FEE_BPS) / 10000).toFixed(2));
-  const sellerAmt = parseFloat((rawPrice - agentFee - platFee).toFixed(2));
-  const totalDue  = rawPrice;   // buyer pays the full listing price
-  const hasBalance = WALLET_USDC >= totalDue;
+  const rawPrice      = listing ? parseFloat(String(listing.price_usdc).replace(/,/g, '')) : 0;
+  const agentCommBps  = listing?.commission_bps ?? 0;
+  const agentFee      = parseFloat(((rawPrice * agentCommBps) / 10000).toFixed(2));
+  const platFee       = parseFloat(((rawPrice * PLATFORM_FEE_BPS) / 10000).toFixed(2));
+  const sellerAmt     = parseFloat((rawPrice - agentFee - platFee).toFixed(2));
+  const totalDue      = rawPrice;
+  const walletUsdc    = wallet ? parseFloat(wallet.balanceUsdc) : 0;
+  const walletAddress = wallet?.address ?? '';
+  const hasBalance    = walletUsdc >= totalDue;
 
   const fmt = (n: number) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const shortAddr = (a: string) => `${a.slice(0, 6)}···${a.slice(-4)}`;
 
   // ── Execution flow ───────────────────────────────────────────────────────
-  const runExecution = () => {
+  const runExecution = async () => {
+    if (!listing) return;
     setStep('executing');
     setPhase({ id: 'approving' });
+    Animated.timing(progressW, { toValue: 0.25, duration: 500, useNativeDriver: false }).start();
 
-    // Animate progress bar to 40% during approval
-    Animated.timing(progressW, { toValue: 0.4, duration: 1800, useNativeDriver: false }).start(() => {
+    try {
+      // Fetch embedded-wallet private key from backend (custodial MVP)
+      const { privateKey } = await api.walletKey();
+
       setPhase({ id: 'approved' });
+      Animated.timing(progressW, { toValue: 0.5, duration: 400, useNativeDriver: false }).start();
+      await new Promise(r => setTimeout(r, 350));
 
-      setTimeout(() => {
-        setPhase({ id: 'funding' });
-        // Animate to 100% during funding
-        Animated.timing(progressW, { toValue: 1, duration: 2200, useNativeDriver: false }).start(() => {
-          const hash = '0x' + Math.random().toString(16).slice(2, 18) + Math.random().toString(16).slice(2, 18);
-          setPhase({ id: 'funded', txHash: hash });
-          setStep('done');
-          Animated.spring(checkScale, { toValue: 1, useNativeDriver: true, tension: 70, friction: 8 }).start();
-        });
-      }, 600);
-    });
+      setPhase({ id: 'funding' });
+      Animated.timing(progressW, { toValue: 0.75, duration: 500, useNativeDriver: false }).start();
+
+      // bytes32 listing ref: use stored value or derive from listing id
+      const listingRef = listing.listing_ref ?? ethersId(listing.id);
+      const isAgentBrokered = listing.listing_type === 'agent_brokered';
+      const seller = listing.owner_address ?? listing.agent_address ?? walletAddress;
+      const agent  = isAgentBrokered
+        ? (listing.agent_address ?? ZeroAddress)
+        : ZeroAddress;
+      // price_usdc is stored in human-readable USDC (e.g. 50000) → convert to 6-decimal base units
+      const priceBaseUnits = String(BigInt(Math.round(rawPrice * 1_000_000)));
+
+      const { dealId, txHash } = await buyListing({
+        privateKey,
+        listingRef,
+        seller,
+        agent,
+        commissionBps: listing.commission_bps,
+        priceUsdc: priceBaseUnits,
+      });
+
+      // Record the on-chain deal in the backend
+      const myUser = await storage.getUser();
+      if (myUser?.id) {
+        await api.recordDeal(listing.id, String(myUser.id), dealId).catch(() => {});
+      }
+
+      Animated.timing(progressW, { toValue: 1, duration: 400, useNativeDriver: false }).start(() => {
+        setPhase({ id: 'funded', txHash });
+        setStep('done');
+        Animated.spring(checkScale, { toValue: 1, useNativeDriver: true, tension: 70, friction: 8 }).start();
+      });
+    } catch (err: any) {
+      setErrorMsg(err?.message ?? 'Transaction failed. Please try again.');
+      setStep('error');
+    }
   };
 
   if (!listing) return null;
@@ -153,7 +190,7 @@ export default function EscrowConfirmScreen() {
                 <Text style={styles.listingTitle} numberOfLines={2}>{listing.title}</Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                   <Ionicons name="location-outline" size={12} color="#9ca3af" />
-                  <Text style={styles.listingLoc}>{listing.location}</Text>
+                  <Text style={styles.listingLoc}>{listing.asset_type.toUpperCase()}</Text>
                 </View>
               </View>
             </View>
@@ -164,7 +201,7 @@ export default function EscrowConfirmScreen() {
               <BreakdownRow label="Listing price" value={`$${fmt(rawPrice)}`} />
               <View style={styles.breakdownDivider} />
               <BreakdownRow
-                label={`Agent commission (${AGENT_COMMISSION_BPS / 100}%)`}
+                label={`Agent commission (${agentCommBps / 100}%)`}
                 value={`$${fmt(agentFee)}`}
                 sub="Paid to broker on settlement"
                 muted
@@ -194,11 +231,11 @@ export default function EscrowConfirmScreen() {
             <Text style={styles.sectionLabel}>Agent</Text>
             <View style={styles.agentCard}>
               <View style={styles.agentAvatar}>
-                <Text style={styles.agentInitial}>{listing.agent_name[0]}</Text>
+                <Text style={styles.agentInitial}>{(listing.agent_name ?? '?')[0]}</Text>
               </View>
               <View style={{ flex: 1 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <Text style={styles.agentName}>{listing.agent_name}</Text>
+                  <Text style={styles.agentName}>{listing.agent_name ?? 'Agent'}</Text>
                   {listing.agent_kyc === 'verified' && (
                     <View style={styles.kycPill}>
                       <Ionicons name="shield-checkmark" size={10} color={GOLD} />
@@ -248,12 +285,12 @@ export default function EscrowConfirmScreen() {
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.walletLabel}>Paying from</Text>
-                  <Text style={styles.walletAddr}>{shortAddr(WALLET_ADDRESS)}</Text>
+                  <Text style={styles.walletAddr}>{walletAddress ? shortAddr(walletAddress) : 'Loading…'}</Text>
                 </View>
                 <View style={{ alignItems: 'flex-end' }}>
                   <Text style={styles.walletBalLabel}>Balance</Text>
                   <Text style={[styles.walletBal, !hasBalance && { color: RED }]}>
-                    ${fmt(WALLET_USDC)} USDC
+                    ${fmt(walletUsdc)} USDC
                   </Text>
                 </View>
               </View>
@@ -262,14 +299,14 @@ export default function EscrowConfirmScreen() {
                 <View style={styles.balOkRow}>
                   <Ionicons name="checkmark-circle" size={15} color={GREEN} />
                   <Text style={styles.balOkText}>
-                    Sufficient balance · ${fmt(WALLET_USDC - totalDue)} USDC remaining after
+                    Sufficient balance · ${fmt(walletUsdc - totalDue)} USDC remaining after
                   </Text>
                 </View>
               ) : (
                 <View style={styles.balErrRow}>
                   <Ionicons name="alert-circle-outline" size={15} color={RED} />
                   <Text style={styles.balErrText}>
-                    Insufficient balance. Need ${fmt(totalDue - WALLET_USDC)} more USDC.
+                    Insufficient balance. Need ${fmt(totalDue - walletUsdc)} more USDC.
                   </Text>
                 </View>
               )}
@@ -340,6 +377,26 @@ export default function EscrowConfirmScreen() {
                : 'Confirming on chain…'}
             </Text>
             <Text style={styles.execSub}>Do not close this screen.</Text>
+          </View>
+        )}
+
+        {/* ── ERROR ──────────────────────────────────────────────────── */}
+        {step === 'error' && (
+          <View style={styles.successContainer}>
+            <Ionicons name="close-circle" size={64} color={RED} />
+            <Text style={[styles.successTitle, { color: RED }]}>Transaction failed</Text>
+            <Text style={[styles.successSub, { color: '#6b7280' }]}>{errorMsg}</Text>
+            <TouchableOpacity style={[styles.btnPrimary, { marginTop: 24 }]} onPress={() => {
+              setStep('wallet');
+              setPhase({ id: 'idle' });
+              progressW.setValue(0);
+              setErrorMsg('');
+            }} activeOpacity={0.85}>
+              <Text style={styles.btnText}>Try Again</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.btnGhost} onPress={() => nav.goBack()}>
+              <Text style={styles.btnGhostText}>Cancel</Text>
+            </TouchableOpacity>
           </View>
         )}
 

@@ -1,27 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View, Text, TouchableOpacity, ScrollView, StyleSheet, StatusBar,
-  TextInput, Modal, Pressable, ActivityIndicator,
+  TextInput, Modal, Pressable, ActivityIndicator, Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { ListingsStackParamList, RootStackParamList } from '../navigation/types';
-import { MOCK_LISTINGS } from '../data/mockListings';
+import { api, type Listing } from '../lib/api';
+import { storage } from '../lib/storage';
 
 const NAVY   = '#0c2340';
 const GOLD   = '#c9912a';
 const GOLD_L = '#fdf3e3';
-
-// Mock: the currently logged-in user. Listings with created_by === this are "mine".
-const CURRENT_USER_ID = 'user-1';
 
 type PurchaseStatus = null | 'requested' | 'deal_created' | 'funded';
 type DetailRoute    = RouteProp<ListingsStackParamList, 'ListingDetail'>;
 
 type PurchaseRequest = {
   id: string;
+  buyerId: string;
   buyerName: string;
   buyerAddress: string;
   requestedAt: string;
@@ -34,40 +33,72 @@ export default function ListingDetailScreen() {
   const nav    = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route  = useRoute<DetailRoute>();
 
-  const listing = MOCK_LISTINGS.find(l => l.id === route.params.id);
+  const [listing, setListing] = useState<Listing | null>(null);
+  const [myUserId, setMyUserId] = useState<string | null>(null);
+  const [loadingListing, setLoadingListing] = useState(true);
+
+  useEffect(() => {
+    api.listing(route.params.id)
+      .then(data => setListing(data))
+      .catch(() => {})
+      .finally(() => setLoadingListing(false));
+    storage.getUser().then(u => { if (u?.id) setMyUserId(String(u.id)); });
+  }, [route.params.id]);
 
   // ── all hooks before any conditional returns ──
-  const isOwner    = listing?.created_by === CURRENT_USER_ID;
+  const isOwner    = listing?.created_by != null && myUserId != null && String(listing.created_by) === myUserId;
   const isProperty = listing?.asset_type === 'property';
 
   // Buyer state machine
   const [purchaseStatus, setPurchaseStatus] = useState<PurchaseStatus>(null);
   const [showBuyModal, setShowBuyModal]     = useState(false);
+  const [requestingPurchase, setRequestingPurchase] = useState(false);
 
   // Owner — invite-owner state
-  const [ownerName,  setOwnerName]   = useState(listing?.owner_name  ?? '');
-  const [ownerEmail, setOwnerEmail]  = useState(listing?.owner_email ?? '');
-  // 'none' → agent hasn't submitted yet
-  // 'pending_email' → invitation sent, awaiting owner's confirmation click
-  // 'confirmed' → owner confirmed, listing is live
-  const [ownerStatus, setOwnerStatus] = useState<'none' | 'pending_email' | 'confirmed'>(
-    listing?.owner_status ?? 'none'
-  );
+  const [ownerName,   setOwnerName]   = useState('');
+  const [ownerEmail,  setOwnerEmail]  = useState('');
+  const [ownerStatus, setOwnerStatus] = useState<'none' | 'pending_email' | 'confirmed'>('none');
 
-  // Owner — purchase requests
-  const [pendingReqs, setPendingReqs] = useState<PurchaseRequest[]>(
-    // Prepopulate demo requests only for listing 1 (agent_brokered, owned by me)
-    listing?.id === '1'
-      ? [{ id: 'req-1', buyerName: 'David Okonkwo', buyerAddress: '0x4f2e...c12a', requestedAt: '2h ago' }]
-      : []
-  );
-  const [activeDeals, setActiveDeals] = useState<PurchaseRequest[]>([]);
+  useEffect(() => {
+    if (listing) {
+      setOwnerName(listing.owner_name ?? '');
+      setOwnerEmail(listing.owner_email ?? '');
+      setOwnerStatus((listing.owner_status as any) ?? 'none');
+    }
+  }, [listing]);
+
+  // Owner — incoming purchase requests
+  const [pendingReqs, setPendingReqs]  = useState<PurchaseRequest[]>([]);
+  const [activeDeals, setActiveDeals]  = useState<PurchaseRequest[]>([]);
   const [creatingDealId, setCreatingDealId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isOwner && listing) {
+      api.incomingRequests().then(reqs => {
+        const mine = reqs.filter((r: any) => String(r.listing_id) === String(listing.id));
+        setPendingReqs(mine.map((r: any) => ({
+          id: r.id,
+          buyerId: String(r.buyer_id ?? r.id),
+          buyerName: r.buyer_name ?? 'Buyer',
+          buyerAddress: r.buyer_address ?? '0x…',
+          requestedAt: r.created_at ? new Date(r.created_at).toLocaleDateString() : '',
+        })));
+      }).catch(() => {});
+    }
+  }, [isOwner, listing]);
+
+  if (loadingListing) {
+    return (
+      <View style={[styles.root, { alignItems: 'center', justifyContent: 'center' }]}>
+        <ActivityIndicator size="large" color={NAVY} />
+      </View>
+    );
+  }
 
   if (!listing) return null;
 
   // ── price math ──
-  const priceNum     = parseFloat(listing.price_usdc.replace(/,/g, ''));
+  const priceNum     = parseFloat(String(listing.price_usdc).replace(/,/g, ''));
   const commPct      = listing.commission_bps ? listing.commission_bps / 100 : 0;
   const agentFee     = listing.commission_bps ? Math.round(priceNum * listing.commission_bps / 10000) : 0;
   const platformFee  = Math.round(priceNum * 100 / 10000);
@@ -81,19 +112,25 @@ export default function ListingDetailScreen() {
     setOwnerStatus('pending_email');
   }
 
-  function createEscrowDeal(req: PurchaseRequest) {
+  async function createEscrowDeal(req: PurchaseRequest) {
     setCreatingDealId(req.id);
-    setTimeout(() => {
-      setPendingReqs(prev => prev.filter(r => r.id !== req.id));
-      setActiveDeals(prev => [...prev, { ...req, dealId: '42' }]);
-      setCreatingDealId(null);
-    }, 1400);
+    try {
+      await api.approvePurchaseRequest(String(listing!.id), req.buyerId);
+    } catch (_) {}
+    setPendingReqs(prev => prev.filter(r => r.id !== req.id));
+    setActiveDeals(prev => [...prev, { ...req, dealId: 'pending' }]);
+    setCreatingDealId(null);
   }
 
   // ── buyer actions ──
-  function requestPurchase() {
+  async function requestPurchase() {
     setShowBuyModal(false);
+    setRequestingPurchase(true);
+    try {
+      await api.requestPurchase(listing!.id);
+    } catch (_) {}
     setPurchaseStatus('requested');
+    setRequestingPurchase(false);
   }
 
   // ── helper: can the owner create a deal? ──
@@ -111,11 +148,15 @@ export default function ListingDetailScreen() {
           <Ionicons name="arrow-back" size={20} color={NAVY} />
         </TouchableOpacity>
         <View style={styles.heroImage}>
-          <Ionicons
-            name={isProperty ? 'business-outline' : 'car-outline'}
-            size={56}
-            color={isProperty ? NAVY : GOLD}
-          />
+          {listing.image ? (
+            <Image source={{ uri: listing.image }} style={styles.heroImg} resizeMode="cover" />
+          ) : (
+            <Ionicons
+              name={isProperty ? 'business-outline' : 'car-outline'}
+              size={56}
+              color={isProperty ? NAVY : GOLD}
+            />
+          )}
         </View>
       </View>
 
@@ -148,12 +189,6 @@ export default function ListingDetailScreen() {
         <View style={styles.priceRow}>
           <Text style={styles.price}>${listing.price_usdc}</Text>
           <Text style={styles.priceUnit}> USDC</Text>
-        </View>
-
-        {/* Location */}
-        <View style={styles.locRow}>
-          <Ionicons name="location-outline" size={15} color="#9ca3af" />
-          <Text style={styles.locText}>{listing.location}</Text>
         </View>
 
         {/* Specs */}
@@ -466,11 +501,11 @@ export default function ListingDetailScreen() {
           <Text style={styles.sectionTitle}>Listing Agent</Text>
           <View style={styles.agentCard}>
             <View style={styles.agentAvatar}>
-              <Text style={styles.agentInitial}>{listing.agent_name[0]}</Text>
+              <Text style={styles.agentInitial}>{(listing.agent_name ?? '?')[0]}</Text>
             </View>
             <View style={{ flex: 1 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <Text style={styles.agentName}>{listing.agent_name}</Text>
+                <Text style={styles.agentName}>{listing.agent_name ?? 'Agent'}</Text>
                 {listing.agent_kyc === 'verified' && (
                   <View style={styles.kycBadge}>
                     <Ionicons name="shield-checkmark" size={11} color={GOLD} />
@@ -612,7 +647,7 @@ export default function ListingDetailScreen() {
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.sheetListingTitle} numberOfLines={2}>{listing.title}</Text>
-                <Text style={styles.sheetListingLoc}>{listing.location}</Text>
+                <Text style={styles.sheetListingLoc}>{listing.asset_type.toUpperCase()}</Text>
               </View>
             </View>
 
@@ -696,7 +731,8 @@ const styles = StyleSheet.create({
   root:  { flex: 1, backgroundColor: '#fff' },
   hero:  { backgroundColor: '#f3f4f6', paddingHorizontal: 16, paddingBottom: 0 },
   backBtn: { width: 38, height: 38, borderRadius: 12, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
-  heroImage: { height: 180, alignItems: 'center', justifyContent: 'center' },
+  heroImage: { height: 180, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  heroImg:   { width: '100%', height: '100%' },
 
   scroll:        { flex: 1 },
   scrollContent: { paddingHorizontal: 20, paddingTop: 20 },

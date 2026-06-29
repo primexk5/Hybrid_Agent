@@ -2,6 +2,8 @@ const { ethers } = require("ethers");
 const asyncHandler = require("../utils/asyncHandler");
 const ApiError = require("../utils/ApiError");
 const dealModel = require("../models/dealModel");
+const db = require("../config/filebaseDB");
+const { decrypt } = require("../utils/crypto");
 
 const fmt = (base) => (Number(base) / 1e6).toLocaleString(undefined, { maximumFractionDigits: 2 });
 
@@ -50,4 +52,13 @@ const withdraw = asyncHandler(async (req, res) => {
   });
 });
 
-module.exports = { get, withdraw };
+// GET /wallet/key  (auth) — return decrypted embedded-wallet private key.
+// MVP-only: moves to Privy/Web3Auth in production (key never leaves server there).
+const getKey = asyncHandler(async (req, res) => {
+  const raw = await db.get(`db/users/records/${req.user.id}.json`);
+  if (!raw?.wallet_enc_key) throw ApiError.badRequest("no embedded wallet found for this account");
+  const privateKey = decrypt(raw.wallet_enc_key);
+  res.json({ privateKey });
+});
+
+module.exports = { get, withdraw, getKey };

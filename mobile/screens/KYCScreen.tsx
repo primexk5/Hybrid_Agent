@@ -8,6 +8,8 @@ import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import { api } from '../lib/api';
+import { storage } from '../lib/storage';
 
 const NAVY  = '#0c2340';
 const GOLD  = '#c9912a';
@@ -85,13 +87,20 @@ export default function KYCScreen() {
     if (idx > 0) { setState(flow[idx - 1]); } else { setState('start'); }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setSubmitting(true);
-    // TODO: POST /api/kyc with formData (personal + docs + selfie)
-    setTimeout(() => {
-      setSubmitting(false);
+    setError('');
+    try {
+      await api.kycVerify();
+      // refresh cached user so Profile shows verified status
+      const { user } = await api.me();
+      await storage.setUser(user);
       setState('pending');
-    }, 2000);
+    } catch (e: any) {
+      setError(e.message ?? 'KYC submission failed.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const pickImage = async (onPick: (uri: string) => void, camera = false) => {

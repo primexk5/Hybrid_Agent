@@ -1,62 +1,106 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import {
-  View, Text, TouchableOpacity, ScrollView, StyleSheet, StatusBar,
+  View, Text, TouchableOpacity, ScrollView, StyleSheet, StatusBar, Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
+import { api, type AuthUser } from '../lib/api';
+import { storage } from '../lib/storage';
 
 const NAVY = '#0c2340';
 const GOLD = '#c9912a';
-
-const MENU_SECTIONS = [
-  {
-    title: 'Account',
-    items: [
-      { icon: 'person-outline',      label: 'Personal Details',   sub: 'Name, email, phone',          route: null },
-      { icon: 'shield-outline',       label: 'KYC Verification',  sub: 'Identity not verified', accent: true, route: 'KYC' },
-      { icon: 'wallet-outline',       label: 'Wallet',            sub: 'View balance & transactions',  route: 'Wallet' },
-    ],
-  },
-  {
-    title: 'Activity',
-    items: [
-      { icon: 'list-outline',         label: 'My Listings',       sub: '0 active' },
-      { icon: 'briefcase-outline',    label: 'My Deals',          sub: '0 completed' },
-      { icon: 'star-outline',         label: 'Reviews',           sub: '0 reviews' },
-    ],
-  },
-  {
-    title: 'Settings',
-    items: [
-      { icon: 'notifications-outline', label: 'Notifications',   sub: 'Push alerts on' },
-      { icon: 'moon-outline',          label: 'Appearance',      sub: 'Light mode' },
-      { icon: 'help-circle-outline',   label: 'Help & Support',  sub: 'FAQ · Contact' },
-    ],
-  },
-  {
-    title: 'Demo',
-    items: [
-      { icon: 'cash-outline', label: 'Owner Payout Access', sub: 'Demo: off-platform owner withdrawal', route: 'OwnerWithdraw', accent: true },
-    ],
-  },
-];
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const nav = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
-  const handleLogout = () => {
+  const [user, setUser]             = useState<AuthUser | null>(null);
+  const [listingCount, setListingCount] = useState(0);
+
+  useFocusEffect(useCallback(() => {
+    let active = true;
+
+    storage.getUser().then(cached => { if (active && cached) setUser(cached); });
+
+    api.me().then(({ user: u }) => {
+      if (!active) return;
+      setUser(u);
+      storage.setUser(u);
+    }).catch(() => {});
+
+    api.myListings().then(data => {
+      if (active) setListingCount(data.length);
+    }).catch(() => {});
+
+    return () => { active = false; };
+  }, []));
+
+  const handleLogout = async () => {
+    await storage.clearAll();
     nav.reset({ index: 0, routes: [{ name: 'Cover' }] });
   };
+
+  const isVerified = user?.kyc_status === 'verified';
+  const initials   = (user?.full_name ?? user?.user_name ?? 'U')[0].toUpperCase();
+
+  const MENU_SECTIONS = [
+    {
+      title: 'Account',
+      items: [
+        {
+          icon: 'person-outline',
+          label: 'Personal Details',
+          sub: user ? `${user.full_name} · @${user.user_name}` : 'Name, email, phone',
+          route: null,
+        },
+        {
+          icon: 'shield-outline',
+          label: 'KYC Verification',
+          sub: isVerified ? 'Identity verified ✓' : 'Identity not verified',
+          accent: !isVerified,
+          route: 'KYC',
+        },
+        {
+          icon: 'wallet-outline',
+          label: 'Wallet',
+          sub: user?.wallet_address
+            ? `${user.wallet_address.slice(0, 6)}···${user.wallet_address.slice(-4)}`
+            : 'View balance & transactions',
+          route: 'Wallet',
+        },
+      ],
+    },
+    {
+      title: 'Activity',
+      items: [
+        { icon: 'list-outline',      label: 'My Listings', sub: `${listingCount} listing${listingCount !== 1 ? 's' : ''}` },
+        { icon: 'briefcase-outline', label: 'My Deals',    sub: '0 completed' },
+        { icon: 'star-outline',      label: 'Reviews',     sub: '0 reviews' },
+      ],
+    },
+    {
+      title: 'Settings',
+      items: [
+        { icon: 'notifications-outline', label: 'Notifications', sub: 'Push alerts on' },
+        { icon: 'moon-outline',          label: 'Appearance',    sub: 'Light mode' },
+        { icon: 'help-circle-outline',   label: 'Help & Support', sub: 'FAQ · Contact' },
+      ],
+    },
+    {
+      title: 'Demo',
+      items: [
+        { icon: 'cash-outline', label: 'Owner Payout Access', sub: 'Demo: off-platform owner withdrawal', route: 'OwnerWithdraw', accent: true },
+      ],
+    },
+  ];
 
   return (
     <View style={[styles.root, { paddingTop: insets.top }]}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
 
-      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Profile</Text>
         <TouchableOpacity style={styles.settingsBtn}>
@@ -69,25 +113,34 @@ export default function ProfileScreen() {
         <View style={styles.profileCard}>
           <View style={styles.avatarWrap}>
             <View style={styles.avatar}>
-              <Text style={styles.avatarText}>U</Text>
+              {user?.avatar ? (
+                <Image source={{ uri: user.avatar }} style={styles.avatarImg} resizeMode="cover" />
+              ) : (
+                <Text style={styles.avatarText}>{initials}</Text>
+              )}
             </View>
             <TouchableOpacity style={styles.editAvatar}>
               <Ionicons name="camera-outline" size={13} color={NAVY} />
             </TouchableOpacity>
           </View>
           <View style={styles.profileInfo}>
-            <Text style={styles.profileName}>Your Name</Text>
-            <Text style={styles.profileEmail}>you@example.com</Text>
+            <Text style={styles.profileName}>{user?.full_name ?? 'Your Name'}</Text>
+            <Text style={styles.profileEmail}>{user?.email ?? 'you@example.com'}</Text>
             <View style={styles.kycRow}>
-              <Ionicons name="alert-circle-outline" size={13} color="#f59e0b" />
-              <Text style={styles.kycText}>KYC Pending — complete to transact</Text>
+              <Ionicons
+                name={isVerified ? 'shield-checkmark-outline' : 'alert-circle-outline'}
+                size={13}
+                color={isVerified ? '#22c55e' : '#f59e0b'}
+              />
+              <Text style={[styles.kycText, isVerified && { color: '#22c55e' }]}>
+                {isVerified ? 'KYC Verified' : 'KYC Pending — complete to transact'}
+              </Text>
             </View>
           </View>
 
-          {/* Stats */}
           <View style={styles.statRow}>
             <View style={styles.statItem}>
-              <Text style={styles.statVal}>0</Text>
+              <Text style={styles.statVal}>{listingCount}</Text>
               <Text style={styles.statLabel}>Listings</Text>
             </View>
             <View style={styles.statDivider} />
@@ -97,25 +150,26 @@ export default function ProfileScreen() {
             </View>
             <View style={styles.statDivider} />
             <View style={styles.statItem}>
-              <Text style={styles.statVal}>—</Text>
-              <Text style={styles.statLabel}>Rating</Text>
+              <Text style={styles.statVal}>{user?.user_type ?? '—'}</Text>
+              <Text style={styles.statLabel}>Role</Text>
             </View>
           </View>
         </View>
 
-        {/* KYC prompt */}
-        <TouchableOpacity style={styles.kycCard} activeOpacity={0.85} onPress={() => nav.navigate('KYC')}>
-          <View style={styles.kycIcon}>
-            <Ionicons name="shield-checkmark-outline" size={22} color={GOLD} />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.kycCardTitle}>Complete KYC</Text>
-            <Text style={styles.kycCardDesc}>Verify your identity to buy and sell on HybridAgent</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={18} color={GOLD} />
-        </TouchableOpacity>
+        {/* KYC prompt — only when not yet verified */}
+        {!isVerified && (
+          <TouchableOpacity style={styles.kycCard} activeOpacity={0.85} onPress={() => nav.navigate('KYC')}>
+            <View style={styles.kycIcon}>
+              <Ionicons name="shield-checkmark-outline" size={22} color={GOLD} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.kycCardTitle}>Complete KYC</Text>
+              <Text style={styles.kycCardDesc}>Verify your identity to buy and sell on HybridAgent</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={GOLD} />
+          </TouchableOpacity>
+        )}
 
-        {/* Menu sections */}
         {MENU_SECTIONS.map(section => (
           <View key={section.title} style={styles.menuSection}>
             <Text style={styles.menuSectionTitle}>{section.title}</Text>
@@ -128,7 +182,7 @@ export default function ProfileScreen() {
                   onPress={() => {
                     const r = (item as any).route;
                     if (r === 'OwnerWithdraw') nav.navigate('OwnerWithdraw', {});
-                    else if (r) nav.navigate(r);
+                    else if (r) nav.navigate(r as any);
                   }}
                 >
                   <View style={[styles.menuIcon, (item as any).accent && styles.menuIconAccent]}>
@@ -145,7 +199,6 @@ export default function ProfileScreen() {
           </View>
         ))}
 
-        {/* Logout */}
         <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout} activeOpacity={0.85}>
           <Ionicons name="log-out-outline" size={18} color="#dc2626" />
           <Text style={styles.logoutText}>Sign Out</Text>
@@ -167,7 +220,8 @@ const styles = StyleSheet.create({
 
   profileCard: { backgroundColor: '#fff', borderRadius: 20, borderWidth: 1, borderColor: '#e5e7eb', padding: 20, marginBottom: 16 },
   avatarWrap:  { position: 'relative', alignSelf: 'flex-start', marginBottom: 12 },
-  avatar:      { width: 64, height: 64, borderRadius: 32, backgroundColor: NAVY, alignItems: 'center', justifyContent: 'center' },
+  avatar:      { width: 64, height: 64, borderRadius: 32, backgroundColor: NAVY, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  avatarImg:   { width: 64, height: 64, borderRadius: 32 },
   avatarText:  { fontSize: 24, fontWeight: '800', color: '#fff' },
   editAvatar:  { position: 'absolute', right: -2, bottom: -2, width: 22, height: 22, borderRadius: 11, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: '#e5e7eb' },
   profileInfo: { marginBottom: 16 },
@@ -177,7 +231,7 @@ const styles = StyleSheet.create({
   kycText:     { fontSize: 12, color: '#f59e0b', fontWeight: '500' },
   statRow:     { flexDirection: 'row', backgroundColor: '#f9fafb', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: '#e5e7eb' },
   statItem:    { flex: 1, alignItems: 'center', gap: 2 },
-  statVal:     { fontSize: 20, fontWeight: '900', color: NAVY },
+  statVal:     { fontSize: 18, fontWeight: '900', color: NAVY, textTransform: 'capitalize' },
   statLabel:   { fontSize: 11, color: '#9ca3af' },
   statDivider: { width: 1, backgroundColor: '#e5e7eb', alignSelf: 'stretch', marginHorizontal: 8 },
 

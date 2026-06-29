@@ -57,6 +57,17 @@ async function recordDeal(listingId, buyerId, dealId) {
   return pr;
 }
 
+async function approve(listingId, buyerId) {
+  const key = recordKey(listingId, buyerId);
+  const pr = await db.get(key);
+  if (!pr) return null;
+  pr.status = "approved";
+  pr.updated_at = new Date().toISOString();
+  await db.put(key, pr);
+  await syncIndexes(pr);
+  return pr;
+}
+
 async function markFunded(listingId, buyerAddress) {
   const keys = await db.listKeys(`${RECORDS}${listingId}/`);
   const all = await Promise.all(keys.map((k) => db.get(k)));
@@ -124,6 +135,7 @@ module.exports = {
   getByListing,
   getByListingAndBuyer,
   create,
+  approve,
   recordDeal,
   markFunded,
   getByBuyer,

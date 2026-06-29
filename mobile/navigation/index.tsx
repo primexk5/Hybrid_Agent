@@ -17,6 +17,7 @@ import RegisterScreen from '../screens/RegisterScreen';
 import ListingsScreen from '../screens/ListingsScreen';
 import ListingDetailScreen from '../screens/ListingDetailScreen';
 import LeaderboardScreen from '../screens/LeaderboardScreen';
+import NotificationsScreen from '../screens/NotificationsScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 
 import type { RootStackParamList, ListingsStackParamList, TabParamList } from './types';
@@ -55,24 +56,26 @@ function MainTabs() {
         tabBarLabelStyle: styles.tabLabel,
         tabBarIcon: ({ color, size, focused }) => {
           const icons: Record<string, { outline: string; solid: string }> = {
-            Home:         { outline: 'home-outline',        solid: 'home' },
-            ListingsTab:  { outline: 'list-outline',        solid: 'list' },
-            Leaderboard:  { outline: 'trophy-outline',      solid: 'trophy' },
-            Profile:      { outline: 'person-outline',      solid: 'person' },
+            Home:          { outline: 'home-outline',              solid: 'home' },
+            ListingsTab:   { outline: 'list-outline',              solid: 'list' },
+            Notifications: { outline: 'notifications-outline',     solid: 'notifications' },
+            Leaderboard:   { outline: 'trophy-outline',            solid: 'trophy' },
+            Profile:       { outline: 'person-outline',            solid: 'person' },
           };
           const key = focused ? 'solid' : 'outline';
           return (
             <View style={focused ? [styles.tabIconActive, { borderColor: GOLD }] : undefined}>
-              <Ionicons name={icons[route.name][key] as any} size={22} color={color} />
+              <Ionicons name={icons[route.name][key] as any} size={20} color={color} />
             </View>
           );
         },
       })}
     >
-      <Tab.Screen name="Home"         component={DashboardScreen} />
-      <Tab.Screen name="ListingsTab"  component={ListingsStack}   options={{ title: 'Listings' }} />
-      <Tab.Screen name="Leaderboard"  component={LeaderboardScreen} />
-      <Tab.Screen name="Profile"      component={ProfileScreen} />
+      <Tab.Screen name="Home"          component={DashboardScreen} />
+      <Tab.Screen name="ListingsTab"   component={ListingsStack}        options={{ title: 'Listings' }} />
+      <Tab.Screen name="Notifications" component={NotificationsScreen}  options={{ title: 'Activity' }} />
+      <Tab.Screen name="Leaderboard"   component={LeaderboardScreen} />
+      <Tab.Screen name="Profile"       component={ProfileScreen} />
     </Tab.Navigator>
   );
 }
@@ -105,7 +108,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0,
   },
   tabLabel: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '600',
     marginTop: 2,
   },

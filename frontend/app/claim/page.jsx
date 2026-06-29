@@ -177,7 +177,7 @@ function ClaimInner() {
                 <button onClick={logout} className="text-xs font-semibold text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">Log out</button>
               </div>
 
-              <div className="bg-gradient-to-br from-teal-600 to-teal-700 text-white rounded-2xl p-5 mb-4">
+              <div className="bg-teal-600 text-white rounded-2xl p-5 mb-4">
                 <p className="text-xs text-teal-100 mb-1">Available to withdraw</p>
                 <p className="text-3xl font-extrabold">
                   {balLoading && !balance ? '…' : (balance ? Number(balance.formatted).toLocaleString() : '0')}

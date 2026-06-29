@@ -9,30 +9,32 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
+import { api, type UserType } from '../lib/api';
+import { storage } from '../lib/storage';
 
 const NAVY = '#0c2340';
 const GOLD = '#c9912a';
 
 const STEPS = ['Account', 'Contact', 'Role', 'Security'];
 
-type Role = 'owner' | 'agent' | 'both';
+const USERNAME_RX = /^[a-zA-Z0-9]{3,40}$/;
 
 export default function RegisterScreen() {
   const insets = useSafeAreaInsets();
   const nav = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
-  const [step, setStep] = useState(0);
+  const [step, setStep]   = useState(0);
   const [loading, setLoading] = useState(false);
 
-  // Step 1 — Account
-  const [fullName, setFullName] = useState('');
-  const [email, setEmail]       = useState('');
-  // Step 2 — Contact
-  const [phone, setPhone]       = useState('');
-  const [country, setCountry]   = useState('');
-  // Step 3 — Role
-  const [role, setRole]         = useState<Role | null>(null);
-  // Step 4 — Security
+  // Step 0 — Account
+  const [fullName, setFullName]   = useState('');
+  const [userName, setUserName]   = useState('');
+  const [email, setEmail]         = useState('');
+  // Step 1 — Contact
+  const [phone, setPhone]         = useState('');
+  // Step 2 — Role
+  const [role, setRole]           = useState<UserType | null>(null);
+  // Step 3 — Security
   const [password, setPassword]   = useState('');
   const [confirm, setConfirm]     = useState('');
   const [showPw, setShowPw]       = useState(false);
@@ -40,42 +42,57 @@ export default function RegisterScreen() {
   const [error, setError]         = useState('');
 
   const validate = () => {
-    if (step === 0 && (!fullName || !email)) { setError('Fill in all fields.'); return false; }
-    if (step === 1 && (!phone || !country))  { setError('Fill in all fields.'); return false; }
-    if (step === 2 && !role)                 { setError('Select a role.'); return false; }
+    if (step === 0) {
+      if (!fullName || !userName || !email) { setError('Fill in all fields.'); return false; }
+      if (!USERNAME_RX.test(userName)) { setError('Username must be 3–40 alphanumeric characters.'); return false; }
+    }
+    if (step === 1 && !phone) { setError('Enter your phone number.'); return false; }
+    if (step === 2 && !role)  { setError('Select a role.'); return false; }
     if (step === 3) {
-      if (!password || !confirm)             { setError('Fill in all fields.'); return false; }
-      if (password !== confirm)              { setError('Passwords do not match.'); return false; }
-      if (password.length < 8)              { setError('Password must be 8+ characters.'); return false; }
+      if (!password || !confirm)  { setError('Fill in all fields.'); return false; }
+      if (password !== confirm)   { setError('Passwords do not match.'); return false; }
+      if (password.length < 8)   { setError('Password must be 8+ characters.'); return false; }
     }
     setError('');
     return true;
   };
 
-  const next = () => {
+  const next = async () => {
     if (!validate()) return;
     if (step < 3) { setStep(s => s + 1); return; }
-    // submit
     setLoading(true);
-    setTimeout(() => { setLoading(false); nav.navigate('Main'); }, 1400);
+    try {
+      const { token, user } = await api.register({
+        fullName,
+        userName,
+        email: email.trim().toLowerCase(),
+        phoneNumber: phone,
+        password,
+        userType: role!,
+      });
+      await storage.setToken(token);
+      await storage.setUser(user);
+      nav.navigate('Main');
+    } catch (e: any) {
+      setError(e.message ?? 'Registration failed.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const ROLE_OPTIONS: { key: Role; icon: string; label: string; desc: string }[] = [
-    { key: 'owner',  icon: 'home-outline',    label: 'Owner',        desc: 'Sell your own property or vehicle directly' },
-    { key: 'agent',  icon: 'briefcase-outline', label: 'Agent',      desc: 'Broker deals for others and earn commission' },
-    { key: 'both',   icon: 'people-outline',  label: 'Both',         desc: 'Switch roles per listing, no restrictions' },
+  const ROLE_OPTIONS: { key: UserType; icon: string; label: string; desc: string }[] = [
+    { key: 'owner', icon: 'home-outline',     label: 'Owner', desc: 'Sell your own property or vehicle directly' },
+    { key: 'agent', icon: 'briefcase-outline', label: 'Agent', desc: 'Broker deals for others and earn commission' },
   ];
 
   return (
     <View style={[styles.root, { paddingTop: insets.top }]}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
 
-      {/* Back */}
       <TouchableOpacity style={styles.back} onPress={() => step > 0 ? setStep(s => s - 1) : nav.goBack()}>
         <Ionicons name="arrow-back" size={22} color={NAVY} />
       </TouchableOpacity>
 
-      {/* Stepper */}
       <View style={styles.stepper}>
         {STEPS.map((s, i) => (
           <React.Fragment key={s}>
@@ -94,10 +111,8 @@ export default function RegisterScreen() {
 
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + 24 }]} keyboardShouldPersistTaps="handled">
-        {/* Title */}
         <Text style={styles.stepTitle}>{STEPS[step]}</Text>
 
-        {/* Error */}
         {error ? (
           <View style={styles.errorBox}>
             <Ionicons name="alert-circle-outline" size={15} color="#dc2626" />
@@ -109,6 +124,7 @@ export default function RegisterScreen() {
         {step === 0 && (
           <View style={styles.card}>
             <Field label="Full Name" icon="person-outline" value={fullName} onChangeText={setFullName} placeholder="Jane Doe" />
+            <Field label="Username" icon="at-outline" value={userName} onChangeText={setUserName} placeholder="janeadeyemi" />
             <Field label="Email" icon="mail-outline" value={email} onChangeText={setEmail} placeholder="you@example.com" keyboard="email-address" />
           </View>
         )}
@@ -116,15 +132,14 @@ export default function RegisterScreen() {
         {/* Step 1 — Contact */}
         {step === 1 && (
           <View style={styles.card}>
-            <Field label="Phone" icon="call-outline" value={phone} onChangeText={setPhone} placeholder="+234 800 000 0000" keyboard="phone-pad" />
-            <Field label="Country" icon="location-outline" value={country} onChangeText={setCountry} placeholder="Nigeria" />
+            <Field label="Phone Number" icon="call-outline" value={phone} onChangeText={setPhone} placeholder="+234 800 000 0000" keyboard="phone-pad" />
           </View>
         )}
 
         {/* Step 2 — Role */}
         {step === 2 && (
           <View style={styles.card}>
-            <Text style={styles.roleHint}>Your role is per-listing. You can change it when you create a listing.</Text>
+            <Text style={styles.roleHint}>Your role is per-listing. You can act as owner on one listing and agent on another.</Text>
             {ROLE_OPTIONS.map(opt => (
               <TouchableOpacity
                 key={opt.key}
@@ -153,7 +168,6 @@ export default function RegisterScreen() {
           </View>
         )}
 
-        {/* Next / Submit */}
         <TouchableOpacity style={styles.btnPrimary} onPress={next} activeOpacity={0.85} disabled={loading}>
           {loading
             ? <ActivityIndicator color="#fff" />
@@ -175,7 +189,6 @@ export default function RegisterScreen() {
   );
 }
 
-// Reusable field component
 function Field({
   label, icon, value, onChangeText, placeholder, keyboard, secure, toggleSecure, showSecure,
 }: {

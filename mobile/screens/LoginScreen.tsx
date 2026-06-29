@@ -9,6 +9,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
+import { api } from '../lib/api';
+import { storage } from '../lib/storage';
 
 const NAVY = '#0c2340';
 const GOLD = '#c9912a';
@@ -30,25 +32,28 @@ export default function LoginScreen() {
     if (!email || !password) { setError('Please fill in all fields.'); return; }
     setError('');
     setLoading(true);
-    // TODO: wire to backend auth
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      const { token, user } = await api.login(email.trim().toLowerCase(), password);
+      await storage.setToken(token);
+      await storage.setUser(user);
       nav.navigate('Main');
-    }, 1200);
+    } catch (e: any) {
+      setError(e.message ?? 'Login failed. Check your credentials.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <View style={[styles.root, { paddingTop: insets.top }]}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
 
-      {/* Back */}
       <TouchableOpacity style={styles.back} onPress={() => nav.goBack()}>
         <Ionicons name="arrow-back" size={22} color={NAVY} />
       </TouchableOpacity>
 
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + 24 }]} keyboardShouldPersistTaps="handled">
-        {/* Header */}
         <View style={styles.header}>
           <View style={styles.iconRing}>
             <Ionicons name="lock-closed-outline" size={22} color={GOLD} />
@@ -57,7 +62,6 @@ export default function LoginScreen() {
           <Text style={styles.subtitle}>Sign in to your HybridAgent account</Text>
         </View>
 
-        {/* Card */}
         <View style={styles.card}>
           {error ? (
             <View style={styles.errorBox}>
@@ -66,7 +70,6 @@ export default function LoginScreen() {
             </View>
           ) : null}
 
-          {/* Email */}
           <View style={styles.fieldGroup}>
             <Text style={styles.label}>Email</Text>
             <Pressable style={styles.inputWrap} onPress={() => emailRef.current?.focus()}>
@@ -84,7 +87,6 @@ export default function LoginScreen() {
             </Pressable>
           </View>
 
-          {/* Password */}
           <View style={styles.fieldGroup}>
             <Text style={styles.label}>Password</Text>
             <Pressable style={styles.inputWrap} onPress={() => passwordRef.current?.focus()}>
@@ -104,7 +106,6 @@ export default function LoginScreen() {
             </Pressable>
           </View>
 
-          {/* Submit */}
           <TouchableOpacity style={styles.btnPrimary} onPress={handleLogin} activeOpacity={0.85} disabled={loading}>
             {loading
               ? <ActivityIndicator color="#fff" />
@@ -112,7 +113,6 @@ export default function LoginScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Footer */}
         <View style={styles.footer}>
           <Text style={styles.footerText}>Don't have an account? </Text>
           <TouchableOpacity onPress={() => nav.navigate('Register')}>

@@ -262,7 +262,7 @@ const ProfilePage = () => {
         </div>
 
         {/* Verification / wallet card */}
-        <div className="bg-gradient-to-r from-teal-50 to-white dark:from-teal-900/15 dark:to-black border border-teal-100 dark:border-teal-900/40 rounded-3xl p-6 mb-6">
+        <div className="bg-teal-50 dark:bg-teal-900/15 border border-teal-100 dark:border-teal-900/40 rounded-3xl p-6 mb-6">
           <div className="flex flex-col lg:flex-row gap-6 lg:items-center justify-between">
             {/* Tier progress */}
             <div className="flex-1">
@@ -432,7 +432,7 @@ const ProfilePage = () => {
                 <p className="text-xs text-gray-400 mb-4">Commissions (as an agent) and sale proceeds (selling your own) are paid here in USDC. Withdraw anytime.</p>
 
                 {/* Balance */}
-                <div className="bg-gradient-to-br from-teal-600 to-teal-700 text-white rounded-2xl p-5 mb-3">
+                <div className="bg-teal-600 text-white rounded-2xl p-5 mb-3">
                   <p className="text-xs text-teal-100 mb-1">Available to withdraw</p>
                   <p className="text-3xl font-extrabold">{walletInfo ? walletInfo.balanceUsdc : '0.00'} <span className="text-lg font-semibold text-teal-100">USDC</span></p>
                 </div>

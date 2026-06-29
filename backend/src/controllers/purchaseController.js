@@ -40,6 +40,21 @@ const get = asyncHandler(async (req, res) => {
   res.json(pr || null);
 });
 
+// PATCH /listings/:id/purchase/approve  (agent auth required)
+// Agent marks the purchase request as approved so buyer can proceed to fund escrow.
+const approve = asyncHandler(async (req, res) => {
+  const listing = await listingModel.getById(req.params.id);
+  if (!listing) throw ApiError.notFound("listing not found");
+  if (listing.created_by !== req.user.id) throw ApiError.forbidden("not your listing");
+
+  const { buyerId } = req.body || {};
+  if (!buyerId) throw ApiError.badRequest("buyerId required");
+
+  const pr = await purchaseModel.approve(listing.id, buyerId);
+  if (!pr) throw ApiError.notFound("purchase request not found");
+  res.json(pr);
+});
+
 // PATCH /listings/:id/purchase  (agent auth required)
 const recordDeal = asyncHandler(async (req, res) => {
   const listing = await listingModel.getById(req.params.id);
@@ -66,4 +81,4 @@ const getIncoming = asyncHandler(async (req, res) => {
   res.json(rows);
 });
 
-module.exports = { request, get, recordDeal, getMine, getIncoming };
+module.exports = { request, get, approve, recordDeal, getMine, getIncoming };

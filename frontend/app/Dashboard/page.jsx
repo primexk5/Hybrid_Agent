@@ -331,7 +331,7 @@ const DashboardPage = () => {
                 const pendingCount = incoming.filter((r) => r.listing_id === l.id && r.status === 'requested').length;
                 return (
                   <Link key={l.id} href={`/Listings/${l.id}`} className="bg-white dark:bg-white/5 rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800 hover:border-teal-500 transition-all group">
-                    {l.image ? <img src={l.image} alt={l.title} className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-500" /> : <div className="w-full h-40 bg-gradient-to-br from-teal-100 to-gray-100 dark:from-teal-900/30 dark:to-white/5" />}
+                    {l.image ? <img src={l.image} alt={l.title} className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-500" /> : <div className="w-full h-40 bg-teal-100 dark:bg-teal-900/30" />}
                     <div className="p-4">
                       <h3 className="font-bold text-sm truncate">{l.title}</h3>
                       <p className="text-teal-600 dark:text-teal-400 text-sm font-semibold mt-1">{l.price_usdc} USDC</p>

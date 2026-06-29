@@ -31,6 +31,7 @@ router.patch("/:id/owner", requireAuth, validate(attachOwnerSchema), ctrl.attach
 // Purchase request lifecycle (buyer → agent → buyer).
 router.post("/:id/purchase", requireAuth, purchaseCtrl.request);
 router.get("/:id/purchase", requireAuth, purchaseCtrl.get);
+router.patch("/:id/purchase/approve", requireAuth, purchaseCtrl.approve);
 router.patch("/:id/purchase", requireAuth, purchaseCtrl.recordDeal);
 
 module.exports = router;

@@ -10,6 +10,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
+import { api } from '../lib/api';
 
 const NAVY = '#0c2340';
 const GOLD = '#c9912a';
@@ -40,7 +41,6 @@ export default function CreateListingScreen() {
   // Step 1 — Details
   const [title, setTitle]       = useState('');
   const [price, setPrice]       = useState('');
-  const [location, setLocation] = useState('');
   const [description, setDesc]  = useState('');
   const [propSubtype, setPropSubtype] = useState<PropSubtype | null>(null);
   const [bedrooms, setBedrooms]       = useState('');
@@ -75,7 +75,7 @@ export default function CreateListingScreen() {
       if (!assetType) { setError('Select an asset type.'); return false; }
     }
     if (step === 1) {
-      if (!title || !price || !location || !description) { setError('Fill in all required fields.'); return false; }
+      if (!title || !price || !description) { setError('Fill in all required fields.'); return false; }
       if (isNaN(Number(price.replace(/,/g, '')))) { setError('Price must be a number.'); return false; }
       if (assetType === 'property' && !propSubtype) { setError('Select a property type.'); return false; }
       if (assetType === 'vehicle' && (!make || !year)) { setError('Fill in make and year.'); return false; }
@@ -103,17 +103,50 @@ export default function CreateListingScreen() {
     submit();
   };
 
-  const submit = () => {
+  const submit = async () => {
     setLoading(true);
-    // TODO: POST to backend — agent_brokered triggers owner invite email
-    setTimeout(() => {
-      setLoading(false);
+    setError('');
+    try {
+      const form = new FormData();
+      form.append('assetType', assetType!);
+      form.append('listingType', role!);
+      form.append('title', title);
+      form.append('description', description);
+      form.append('priceUsdc', String(Number(price.replace(/,/g, ''))));
+
+      if (role === 'agent_brokered') {
+        // commission: UI shows percent (e.g. "5"), backend wants bps (500)
+        form.append('commissionBps', String(Math.round(Number(commission) * 100)));
+        form.append('ownerName', ownerName);
+        form.append('ownerEmail', ownerEmail);
+        // auth docs: send first doc as ownerContact proof (backend stores single image)
+        if (authDocs.length > 0) {
+          const uri = authDocs[0];
+          const name = uri.split('/').pop() ?? 'doc.jpg';
+          const type = name.endsWith('.png') ? 'image/png' : 'image/jpeg';
+          form.append('image', { uri, name, type } as any);
+        }
+      } else {
+        if (photos.length > 0) {
+          const uri = photos[0];
+          const name = uri.split('/').pop() ?? 'photo.jpg';
+          const type = name.endsWith('.png') ? 'image/png' : 'image/jpeg';
+          form.append('image', { uri, name, type } as any);
+        }
+      }
+
+      await api.createListing(form);
+
       if (role === 'agent_brokered') {
         setPendingApproval(true);
       } else {
         nav.goBack();
       }
-    }, 1500);
+    } catch (e: any) {
+      setError(e.message ?? 'Failed to create listing.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   // ── Media pickers ───────────────────────────────────────────────────────────
@@ -313,7 +346,6 @@ export default function CreateListingScreen() {
 
               <InputField label="Title *" icon="create-outline" value={title} onChange={setTitle} placeholder={assetType === 'property' ? '3 Bed Duplex, Lekki Phase 1' : '2021 Toyota Land Cruiser V8'} />
               <InputField label="Price (USDC) *" icon="logo-usd" value={price} onChange={setPrice} placeholder="120000" keyboard="numeric" />
-              <InputField label="Location *" icon="location-outline" value={location} onChange={setLocation} placeholder="Lekki, Lagos" />
 
               {assetType === 'property' && (
                 <>
@@ -477,12 +509,11 @@ export default function CreateListingScreen() {
               {role === 'owner_direct' && (
                 <View style={styles.summaryCard}>
                   <Text style={styles.summaryTitle}>Review before submitting</Text>
-                  <SummaryRow label="Type"     value={assetType === 'property' ? `Property · ${propSubtype ?? ''}` : `Vehicle · ${make}`} />
-                  <SummaryRow label="Title"    value={title} />
-                  <SummaryRow label="Price"    value={`$${Number(price.replace(/,/g, '') || 0).toLocaleString()} USDC`} />
-                  <SummaryRow label="Location" value={location} />
-                  <SummaryRow label="Photos"   value={`${photos.length} image${photos.length !== 1 ? 's' : ''}`} />
-                  <SummaryRow label="Role"     value="Owner (direct — no commission)" last />
+                  <SummaryRow label="Type"   value={assetType === 'property' ? `Property · ${propSubtype ?? ''}` : `Vehicle · ${make}`} />
+                  <SummaryRow label="Title"  value={title} />
+                  <SummaryRow label="Price"  value={`$${Number(price.replace(/,/g, '') || 0).toLocaleString()} USDC`} />
+                  <SummaryRow label="Photos" value={`${photos.length} image${photos.length !== 1 ? 's' : ''}`} />
+                  <SummaryRow label="Role"   value="Owner (direct — no commission)" last />
                 </View>
               )}
             </View>
@@ -552,15 +583,14 @@ export default function CreateListingScreen() {
               {/* Summary */}
               <View style={styles.summaryCard}>
                 <Text style={styles.summaryTitle}>Review before submitting</Text>
-                <SummaryRow label="Type"       value={assetType === 'property' ? `Property · ${propSubtype ?? ''}` : `Vehicle · ${make}`} />
-                <SummaryRow label="Title"      value={title} />
-                <SummaryRow label="Price"      value={`$${Number(price.replace(/,/g, '') || 0).toLocaleString()} USDC`} />
-                <SummaryRow label="Location"   value={location} />
-                <SummaryRow label="Photos"     value={`${photos.length} image${photos.length !== 1 ? 's' : ''}`} />
-                <SummaryRow label="Commission" value={`${commission}%`} />
-                <SummaryRow label="Owner"      value={ownerName || '—'} />
+                <SummaryRow label="Type"        value={assetType === 'property' ? `Property · ${propSubtype ?? ''}` : `Vehicle · ${make}`} />
+                <SummaryRow label="Title"       value={title} />
+                <SummaryRow label="Price"       value={`$${Number(price.replace(/,/g, '') || 0).toLocaleString()} USDC`} />
+                <SummaryRow label="Photos"      value={`${photos.length} image${photos.length !== 1 ? 's' : ''}`} />
+                <SummaryRow label="Commission"  value={`${commission}% (${Math.round(Number(commission) * 100)} bps)`} />
+                <SummaryRow label="Owner"       value={ownerName || '—'} />
                 <SummaryRow label="Owner email" value={ownerEmail || '—'} />
-                <SummaryRow label="Auth docs"  value={`${authDocs.length} document${authDocs.length !== 1 ? 's' : ''}`} last />
+                <SummaryRow label="Auth docs"   value={`${authDocs.length} document${authDocs.length !== 1 ? 's' : ''}`} last />
               </View>
             </View>
           )}
@@ -636,7 +666,7 @@ function InputField({
   );
 }
 
-function CommissionInput({ value, onChange }: { value: string; onChange: (t: string) => void }) {
+const CommissionInput = ({ value, onChange }: { value: string; onChange: (t: string) => void }) => {
   const ref = useRef<TextInput>(null);
   return (
     <Pressable style={[styles.inputWrap, { flex: 1, backgroundColor: '#ffffff18', borderColor: '#ffffff22' }]} onPress={() => ref.current?.focus()}>
@@ -651,7 +681,7 @@ function CommissionInput({ value, onChange }: { value: string; onChange: (t: str
       />
     </Pressable>
   );
-}
+};
 
 function SummaryRow({ label, value, last }: { label: string; value: string; last?: boolean }) {
   return (

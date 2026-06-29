@@ -9,17 +9,17 @@
 /* no per-component edits. Structure stays mono (gray/neutral/black). */
 /* ---------------------------------------------------------------- */
 @theme {
-  --color-teal-50:  #fff5ed;
-  --color-teal-100: #ffe7d1;
-  --color-teal-200: #fecba6;
-  --color-teal-300: #fda86a;
-  --color-teal-400: #fb8137;
-  --color-teal-500: #f96316;
-  --color-teal-600: #ea580c;
-  --color-teal-700: #c2410c;
-  --color-teal-800: #9a3412;
-  --color-teal-900: #7c2d12;
-  --color-teal-950: #431407;
+  --color-teal-50:  #fdfaf3; /* Very light gold tint */
+  --color-teal-100: #f3e4c6; /* Light gold */
+  --color-teal-200: #e8ce96; /* Soft gold */
+  --color-teal-300: #deb866; /* Medium gold */
+  --color-teal-400: #d4a339; /* Bright gold */
+  --color-teal-500: #c9912a; /* RICH GOLD (Primary accent) */
+  --color-teal-600: #163b6b; /* Lighter Navy (Hover/Text) */
+  --color-teal-700: #0c2340; /* NAVY (Brand primary dark) */
+  --color-teal-800: #08172b; /* Darker Navy */
+  --color-teal-900: #050f1d; /* Very dark Navy */
+  --color-teal-950: #02070e; /* Almost black Navy */
 }
 
 /* ---------------------------------------------------------------- */

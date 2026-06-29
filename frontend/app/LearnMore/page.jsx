@@ -155,7 +155,7 @@ const LearnMorePage = () => {
         </div>
 
         {/* Benefits */}
-        <div className="bg-gradient-to-r from-teal-50 to-white dark:from-teal-900/10 dark:to-black border border-teal-100 dark:border-teal-900/30 rounded-3xl p-8 md:p-10 mb-16">
+        <div className="bg-teal-50 dark:bg-teal-900/10 border border-teal-100 dark:border-teal-900/30 rounded-3xl p-8 md:p-10 mb-16">
           <h2 className="text-xl md:text-2xl font-bold mb-6">Everything you need, nothing you don't</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {benefits.map((benefit) => (
@@ -168,7 +168,7 @@ const LearnMorePage = () => {
         </div>
 
         {/* CTA */}
-        <div className="text-center bg-teal-700 dark:bg-teal-800 rounded-3xl p-10 md:p-14 animate-gradient bg-gradient-to-r from-teal-700 via-teal-600 to-teal-700">
+        <div className="text-center bg-teal-700 dark:bg-teal-800 rounded-3xl p-10 md:p-14">
           <h2 className="text-2xl md:text-3xl font-extrabold text-white mb-3">Get paid what you earned.</h2>
           <p className="text-teal-50 mb-7 max-w-xl mx-auto">Join HybridAgent and let the contract guarantee your commission — locally and across borders.</p>
           <Link href="/Registration" className="inline-flex items-center gap-2 bg-white text-teal-700 font-bold py-3 px-8 rounded-xl hover:bg-teal-50 transition-colors">

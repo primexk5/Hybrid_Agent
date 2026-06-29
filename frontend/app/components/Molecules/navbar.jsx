@@ -80,7 +80,7 @@ const Navbar = () => {
           <span className={`text-xl md:text-3xl font-extrabold tracking-tighter cursor-pointer ${
             isDark ? 'text-white' : 'text-gray-900'
           }`}>
-            <span className='text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-teal-700'>HYBRID</span>
+            <span className='text-teal-500'>HYBRID</span>
             AGENT
           </span>
         </Link>
@@ -134,7 +134,7 @@ const Navbar = () => {
                 </Link>
                 <Link
                   href="/Registration"
-                  className="flex items-center gap-2 text-sm font-semibold text-white bg-gradient-to-r from-teal-600 to-teal-500 hover:from-teal-500 hover:to-teal-400 px-5 py-2 rounded-xl transition-all duration-300 shadow-lg shadow-teal-500/30 hover:shadow-teal-500/40 transform hover:-translate-y-0.5"
+                  className="flex items-center gap-2 text-sm font-semibold text-white bg-teal-500 hover:bg-teal-400 px-5 py-2 rounded-xl transition-all duration-300 shadow-lg shadow-teal-500/30 hover:shadow-teal-500/40 transform hover:-translate-y-0.5"
                 >
                   <FiUserPlus size={16} />
                   Register
@@ -217,7 +217,7 @@ const Navbar = () => {
                     <FiLogIn size={20} />
                     Login
                   </Link>
-                  <Link href="/Registration" onClick={closeNav} className="flex justify-center items-center gap-2 p-3.5 rounded-xl font-semibold text-white bg-gradient-to-r from-teal-600 to-teal-500 hover:from-teal-500 hover:to-teal-400 shadow-md shadow-teal-500/20 transition-all">
+                  <Link href="/Registration" onClick={closeNav} className="flex justify-center items-center gap-2 p-3.5 rounded-xl font-semibold text-white bg-teal-500 hover:bg-teal-400 shadow-md shadow-teal-500/20 transition-all">
                     <FiUserPlus size={20} />
                     Register
                   </Link>
@@ -229,7 +229,7 @@ const Navbar = () => {
         
         {/* Mobile footer area */}
         <div className={`absolute bottom-0 left-0 w-full p-6 text-center text-sm pointer-events-none ${
-          isDark ? 'bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a] to-transparent text-gray-500' : 'bg-gradient-to-t from-white via-white to-transparent text-gray-400'
+          isDark ? 'bg-[#0a0a0a]/90 text-gray-500' : 'bg-white/90 text-gray-400'
         }`}>
           &copy; {new Date().getFullYear()} HybridAgent
         </div>

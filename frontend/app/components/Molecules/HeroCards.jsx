@@ -13,10 +13,9 @@ const HeroCards = () => {
     }`}>
       <div className="w-full">
         <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-6 ${
-          isDark ? 'bg-teal-900/40 text-teal-300 border border-teal-700/50' : 'bg-teal-50 text-teal-700 border border-teal-200'
+          isDark ? 'bg-teal-900/40 text-teal-300' : 'bg-teal-50 text-teal-700'
         }`}>
-          <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse" />
-          Now live — Early access
+          Now live~Early access
         </div>
 
         <div className='font-mono'>

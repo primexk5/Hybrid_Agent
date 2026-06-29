@@ -18,6 +18,7 @@ export type ListingsStackParamList = {
 export type TabParamList = {
   Home: undefined;
   ListingsTab: undefined;
+  Notifications: undefined;
   Leaderboard: undefined;
   Profile: undefined;
 };

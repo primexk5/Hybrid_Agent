@@ -60,7 +60,7 @@ const Slider = () => {
               loading={index === 0 ? 'eager' : 'lazy'}
               className="w-full object-cover h-64 md:h-96"
             />
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-4 py-3">
+            <div className="absolute bottom-0 left-0 right-0 bg-black/40 px-4 py-3">
               <span className="text-white text-sm font-semibold">{slide.label}</span>
             </div>
           </div>

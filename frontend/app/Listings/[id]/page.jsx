@@ -250,7 +250,7 @@ const ItemDetailsPage = () => {
               {item.image ? (
                 <img src={item.image} alt={item.title} className="w-full h-64 sm:h-80 md:h-full object-cover" style={{ maxHeight: '560px' }} />
               ) : (
-                <div className="w-full h-64 md:h-full min-h-[320px] bg-gradient-to-br from-teal-100 to-gray-100 dark:from-teal-900/30 dark:to-white/5 flex items-center justify-center text-teal-300 dark:text-teal-700">
+                <div className="w-full h-64 md:h-full min-h-[320px] bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center text-teal-300 dark:text-teal-700">
                   {isVehicle ? <FiTruck size={64} /> : <FiHome size={64} />}
                 </div>
               )}
