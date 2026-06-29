@@ -1,0 +1,20 @@
+@import "tailwindcss";
+@import "nativewind/theme";
+
+@source "./App.tsx";
+@source "./screens/**/*.{ts,tsx}";
+@source "./components/**/*.{ts,tsx}";
+
+@theme {
+  --color-teal-50:  #fff5ed;
+  --color-teal-100: #ffe7d1;
+  --color-teal-200: #fecba6;
+  --color-teal-300: #fda86a;
+  --color-teal-400: #fb8137;
+  --color-teal-500: #f96316;
+  --color-teal-600: #ea580c;
+  --color-teal-700: #c2410c;
+  --color-teal-800: #9a3412;
+  --color-teal-900: #7c2d12;
+  --color-teal-950: #431407;
+}

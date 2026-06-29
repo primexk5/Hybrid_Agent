@@ -1,0 +1,116 @@
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Ionicons } from '@expo/vector-icons';
+import { View, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import HomeScreen from '../screens/HomeScreen';
+import DashboardScreen from '../screens/DashboardScreen';
+import CreateListingScreen from '../screens/CreateListingScreen';
+import WalletScreen from '../screens/WalletScreen';
+import KYCScreen from '../screens/KYCScreen';
+import EscrowConfirmScreen from '../screens/EscrowConfirmScreen';
+import OwnerWithdrawScreen from '../screens/OwnerWithdrawScreen';
+import LoginScreen from '../screens/LoginScreen';
+import RegisterScreen from '../screens/RegisterScreen';
+import ListingsScreen from '../screens/ListingsScreen';
+import ListingDetailScreen from '../screens/ListingDetailScreen';
+import LeaderboardScreen from '../screens/LeaderboardScreen';
+import ProfileScreen from '../screens/ProfileScreen';
+
+import type { RootStackParamList, ListingsStackParamList, TabParamList } from './types';
+
+const NAVY = '#0c2340';
+const GOLD = '#c9912a';
+
+const RootStack  = createNativeStackNavigator<RootStackParamList>();
+const Tab        = createBottomTabNavigator<TabParamList>();
+const ListStack  = createNativeStackNavigator<ListingsStackParamList>();
+
+function ListingsStack() {
+  return (
+    <ListStack.Navigator screenOptions={{ headerShown: false }}>
+      <ListStack.Screen name="ListingsFeed"   component={ListingsScreen} />
+      <ListStack.Screen name="ListingDetail"  component={ListingDetailScreen} />
+    </ListStack.Navigator>
+  );
+}
+
+function MainTabs() {
+  const insets = useSafeAreaInsets();
+  const tabBarHeight = 62 + insets.bottom;
+
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        headerShown: false,
+        tabBarStyle: {
+          ...styles.tabBar,
+          height: tabBarHeight,
+          paddingBottom: insets.bottom + 10,
+        },
+        tabBarActiveTintColor: NAVY,
+        tabBarInactiveTintColor: '#9ca3af',
+        tabBarLabelStyle: styles.tabLabel,
+        tabBarIcon: ({ color, size, focused }) => {
+          const icons: Record<string, { outline: string; solid: string }> = {
+            Home:         { outline: 'home-outline',        solid: 'home' },
+            ListingsTab:  { outline: 'list-outline',        solid: 'list' },
+            Leaderboard:  { outline: 'trophy-outline',      solid: 'trophy' },
+            Profile:      { outline: 'person-outline',      solid: 'person' },
+          };
+          const key = focused ? 'solid' : 'outline';
+          return (
+            <View style={focused ? [styles.tabIconActive, { borderColor: GOLD }] : undefined}>
+              <Ionicons name={icons[route.name][key] as any} size={22} color={color} />
+            </View>
+          );
+        },
+      })}
+    >
+      <Tab.Screen name="Home"         component={DashboardScreen} />
+      <Tab.Screen name="ListingsTab"  component={ListingsStack}   options={{ title: 'Listings' }} />
+      <Tab.Screen name="Leaderboard"  component={LeaderboardScreen} />
+      <Tab.Screen name="Profile"      component={ProfileScreen} />
+    </Tab.Navigator>
+  );
+}
+
+export default function Navigation() {
+  return (
+    <NavigationContainer>
+      <RootStack.Navigator screenOptions={{ headerShown: false, animation: 'slide_from_right' }}>
+        <RootStack.Screen name="Cover"    component={HomeScreen} />
+        <RootStack.Screen name="Login"    component={LoginScreen} />
+        <RootStack.Screen name="Register" component={RegisterScreen} />
+        <RootStack.Screen name="Main"          component={MainTabs} options={{ animation: 'fade' }} />
+        <RootStack.Screen name="CreateListing" component={CreateListingScreen} options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
+        <RootStack.Screen name="Wallet"        component={WalletScreen} options={{ animation: 'slide_from_right' }} />
+        <RootStack.Screen name="KYC"           component={KYCScreen}         options={{ animation: 'slide_from_right' }} />
+        <RootStack.Screen name="EscrowConfirm"   component={EscrowConfirmScreen}   options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
+        <RootStack.Screen name="OwnerWithdraw"   component={OwnerWithdrawScreen}   options={{ animation: 'slide_from_right' }} />
+      </RootStack.Navigator>
+    </NavigationContainer>
+  );
+}
+
+const styles = StyleSheet.create({
+  tabBar: {
+    backgroundColor: '#ffffff',
+    borderTopWidth: 1,
+    borderTopColor: '#f3f4f6',
+    paddingTop: 8,
+    elevation: 0,
+    shadowOpacity: 0,
+  },
+  tabLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    marginTop: 2,
+  },
+  tabIconActive: {
+    borderBottomWidth: 2,
+    paddingBottom: 2,
+  },
+});
