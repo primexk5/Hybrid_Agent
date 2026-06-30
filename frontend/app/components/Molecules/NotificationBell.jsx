@@ -32,15 +32,15 @@ const NotificationBell = () => {
   };
 
   return (
-    <div className="relative" ref={ref}>
+    <div className="relative flex items-center justify-center" ref={ref}>
       <button
         onClick={toggle}
-        className="relative p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+        className="relative w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
         aria-label="Notifications"
       >
-        <FiBell size={20} className="text-gray-600 dark:text-gray-300" />
+        <FiBell size={22} className="text-gray-600 dark:text-gray-300" />
         {unread > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold">
+          <span className="absolute top-1 right-1 min-w-[16px] h-4 px-1 flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold">
             {unread > 9 ? '9+' : unread}
           </span>
         )}

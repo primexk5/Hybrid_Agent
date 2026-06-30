@@ -27,10 +27,10 @@ const Setting = () => {
   }, [open]);
 
   return (
-    <div className="relative" ref={wrapperRef}>
+    <div className="relative flex items-center justify-center" ref={wrapperRef}>
       <button
         onClick={toggleOpen}
-        className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400 transition-colors"
+        className="relative w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400 transition-colors"
         aria-label="Open settings"
       >
         <FiSettings size={22} />
